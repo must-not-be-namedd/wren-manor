@@ -84,6 +84,39 @@ const Puzzle6 = () => {
 
         <ManorCard>
           <ManorCardHeader>
+            <ManorCardTitle>Database Schema</ManorCardTitle>
+            <ManorCardDescription>
+              Available data in the TRANSACTIONS table:
+            </ManorCardDescription>
+          </ManorCardHeader>
+          <ManorCardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-semibold">ID</th>
+                    <th className="text-left p-3 font-semibold">NAME</th>
+                    <th className="text-left p-3 font-semibold">AMOUNT</th>
+                    <th className="text-left p-3 font-semibold">DATE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {database.TRANSACTIONS.map((row, index) => (
+                    <tr key={index} className="border-b hover:bg-muted/50">
+                      <td className="p-3">{row.ID}</td>
+                      <td className="p-3">{row.NAME}</td>
+                      <td className="p-3">£{row.AMOUNT.toLocaleString()}</td>
+                      <td className="p-3">{row.DATE}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </ManorCardContent>
+        </ManorCard>
+
+        <ManorCard>
+          <ManorCardHeader>
             <ManorCardTitle>SQL Query Terminal</ManorCardTitle>
             <ManorCardDescription>
               Try: SELECT * FROM TRANSACTIONS WHERE AMOUNT &gt; 10000
