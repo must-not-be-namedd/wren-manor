@@ -12,13 +12,14 @@ const Results = () => {
   const navigate = useNavigate();
   const progress = getGameProgress();
 
-  // Redirect if not authorized or puzzles incomplete
+  // Redirect if not authorized or no progress
   useEffect(() => {
     if (!progress.playerName || !progress.teamId) {
       navigate('/');
       return;
     }
-    if (!progress.p1 || !progress.p2 || !progress.p3) {
+    // Allow viewing results if at least puzzle 1 is completed
+    if (!progress.p1) {
       navigate('/');
       return;
     }
@@ -39,9 +40,17 @@ const Results = () => {
     navigate('/leaderboard');
   };
 
-  if (!progress.playerName || !progress.teamId || !progress.p1 || !progress.p2 || !progress.p3) {
+  if (!progress.playerName || !progress.teamId || !progress.p1) {
     return null;
   }
+
+  const completedPuzzles = [
+    progress.p1, progress.p2, progress.p3, progress.p4, 
+    progress.p5, progress.p6, progress.p7
+  ].filter(Boolean).length;
+  
+  const totalPuzzles = 7;
+  const allCompleted = completedPuzzles === totalPuzzles;
 
   const completionTime = progress.completionTime || 0;
   const totalTime = completionTime ? formatTime(completionTime) : 'Still investigating...';
@@ -64,11 +73,11 @@ const Results = () => {
           </div>
           
           <Badge variant="outline" className="text-accent border-accent/30 bg-accent/10 text-lg px-4 py-2">
-            Case Closed
+            {allCompleted ? 'Case Closed' : 'Investigation In Progress'}
           </Badge>
           
           <h1 className="font-manor text-5xl md:text-6xl font-bold text-foreground mb-4">
-            Mystery Solved!
+            {allCompleted ? 'Mystery Solved!' : 'Progress Report'}
           </h1>
           
           <motion.p 
@@ -77,8 +86,10 @@ const Results = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            Congratulations, Detective {progress.playerName}! You have successfully 
-            unraveled the dark secrets of Wren Manor.
+            {allCompleted 
+              ? `Congratulations, Detective ${progress.playerName}! You have successfully unraveled the dark secrets of Wren Manor.`
+              : `Detective ${progress.playerName}, you have completed ${completedPuzzles} of ${totalPuzzles} investigations. Continue your work to solve the mystery.`
+            }
           </motion.p>
         </motion.div>
 
@@ -100,42 +111,76 @@ const Results = () => {
             </ManorCardHeader>
             
             <ManorCardContent className="space-y-6">
+              {/* Progress Overview */}
+              <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg mb-6">
+                <h3 className="font-manor font-semibold text-foreground mb-2">Investigation Progress</h3>
+                <div className="text-3xl font-bold text-primary">{completedPuzzles} / {totalPuzzles}</div>
+                <p className="text-sm text-muted-foreground">Puzzles Completed</p>
+              </div>
+
               {/* Evidence Collected */}
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg">
                   <div className="text-2xl mb-2">🗡️</div>
                   <h3 className="font-manor font-semibold text-foreground mb-1">Murder Weapon</h3>
-                  <p className="text-primary font-bold">{progress.weapon}</p>
+                  <p className="text-primary font-bold">{progress.weapon || 'Unknown'}</p>
                   {progress.p1 && <Badge variant="outline" className="mt-2 text-green-500 border-green-500/30">✓ Identified</Badge>}
                 </div>
                 
                 <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                  <div className="text-2xl mb-2">⏰</div>
-                  <h3 className="font-manor font-semibold text-foreground mb-1">Time Window</h3>
-                  <p className="text-primary font-bold">8:20 - 8:45 PM</p>
-                  {progress.p2 && <Badge variant="outline" className="mt-2 text-green-500 border-green-500/30">✓ Reconstructed</Badge>}
+                  <div className="text-2xl mb-2">🧠</div>
+                  <h3 className="font-manor font-semibold text-foreground mb-1">Killer Identity</h3>
+                  <p className="text-primary font-bold">{progress.killer || 'Unknown'}</p>
+                  {progress.p4 && <Badge variant="outline" className="mt-2 text-green-500 border-green-500/30">✓ Deduced</Badge>}
                 </div>
                 
                 <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                  <div className="text-2xl mb-2">👥</div>
-                  <h3 className="font-manor font-semibold text-foreground mb-1">Suspects Cleared</h3>
-                  <p className="text-primary font-bold">2 of 5</p>
-                  {progress.p3 && <Badge variant="outline" className="mt-2 text-green-500 border-green-500/30">✓ Verified</Badge>}
+                  <div className="text-2xl mb-2">📋</div>
+                  <h3 className="font-manor font-semibold text-foreground mb-1">Case Status</h3>
+                  <p className="text-primary font-bold">{allCompleted ? 'Solved' : 'Ongoing'}</p>
+                  {allCompleted && <Badge variant="outline" className="mt-2 text-green-500 border-green-500/30">✓ Complete</Badge>}
                 </div>
               </div>
 
-              {/* Final Deduction */}
-              <div className="p-6 bg-accent/10 border border-accent/20 rounded-lg">
-                <h3 className="font-manor text-xl font-semibold text-foreground mb-3 text-center">
-                  Final Deduction
-                </h3>
-                <p className="text-muted-foreground leading-relaxed font-body text-center">
-                  Through careful investigation, you have eliminated <strong className="text-green-500">Eleanor (Maid)</strong> and{' '}
-                  <strong className="text-green-500">Reginald (Butler)</strong> from suspicion. Their verified alibis 
-                  place them away from the scene during the critical murder window. The remaining suspects—
-                  <strong className="text-primary"> Victoria, Harrison, and Marcel</strong>—await further investigation.
-                </p>
+              {/* Puzzle Status Grid */}
+              <div className="grid md:grid-cols-4 gap-3">
+                {[
+                  { key: 'p1', label: 'Weapon', icon: '🗡️' },
+                  { key: 'p2', label: 'Timeline', icon: '⏰' },
+                  { key: 'p3', label: 'Alibis', icon: '👥' },
+                  { key: 'p4', label: 'Logic', icon: '🧠' },
+                  { key: 'p5', label: 'Cipher', icon: '🔐' },
+                  { key: 'p6', label: 'Evidence', icon: '🔍' },
+                  { key: 'p7', label: 'Verdict', icon: '⚖️' }
+                ].map((puzzle, index) => (
+                  <div key={puzzle.key} className={`text-center p-3 rounded-lg border ${
+                    progress[puzzle.key as keyof typeof progress] 
+                      ? 'bg-green-500/10 border-green-500/30' 
+                      : 'bg-muted/10 border-border'
+                  }`}>
+                    <div className="text-lg mb-1">{puzzle.icon}</div>
+                    <div className="text-xs font-medium text-foreground">{puzzle.label}</div>
+                    {progress[puzzle.key as keyof typeof progress] && (
+                      <div className="text-green-500 text-xs mt-1">✓</div>
+                    )}
+                  </div>
+                ))}
               </div>
+
+              {/* Final Deduction - Only show if case is complete */}
+              {allCompleted && (
+                <div className="p-6 bg-accent/10 border border-accent/20 rounded-lg">
+                  <h3 className="font-manor text-xl font-semibold text-foreground mb-3 text-center">
+                    Final Deduction
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed font-body text-center">
+                    Through meticulous investigation across seven challenging puzzles, you have solved 
+                    the murder at Wren Manor. <strong className="text-primary">Marcel the Chef</strong> committed 
+                    the crime using a <strong className="text-primary">dagger</strong> from his own kitchen, 
+                    driven by revenge after Lady Wren discovered his theft from the kitchen budget.
+                  </p>
+                </div>
+              )}
 
               {/* Performance Stats */}
               <div className="grid md:grid-cols-2 gap-4">
@@ -170,11 +215,13 @@ const Results = () => {
             <ManorCardContent className="text-center p-8">
               <Trophy className="h-16 w-16 text-accent mx-auto mb-4 animate-glow" />
               <h3 className="font-manor text-2xl font-bold text-foreground mb-2">
-                Master Detective
+                {allCompleted ? 'Master Detective' : 'Detective in Training'}
               </h3>
               <p className="text-muted-foreground font-body">
-                You have successfully completed all three puzzles and uncovered 
-                the truth behind the murder at Wren Manor.
+                {allCompleted 
+                  ? 'You have successfully completed all seven puzzles and solved the murder at Wren Manor.'
+                  : `You have completed ${completedPuzzles} out of ${totalPuzzles} investigations. Keep going to solve the mystery!`
+                }
               </p>
             </ManorCardContent>
           </ManorCard>
@@ -187,6 +234,26 @@ const Results = () => {
           transition={{ delay: 0.9, duration: 0.6 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
+          {!allCompleted && (
+            <ManorButton 
+              variant="primary"
+              onClick={() => {
+                // Navigate to next uncompleted puzzle
+                const nextPuzzle = progress.p1 && !progress.p2 ? '/puzzle2' :
+                                  progress.p2 && !progress.p3 ? '/puzzle3' :
+                                  progress.p3 && !progress.p4 ? '/puzzle4' :
+                                  progress.p4 && !progress.p5 ? '/puzzle5' :
+                                  progress.p5 && !progress.p6 ? '/puzzle6' :
+                                  progress.p6 && !progress.p7 ? '/puzzle7' : '/';
+                navigate(nextPuzzle);
+              }}
+              size="lg"
+            >
+              <ArrowRight className="h-4 w-4 mr-2" />
+              Continue Investigation
+            </ManorButton>
+          )}
+          
           <ManorButton 
             variant="candlelight"
             onClick={handleViewLeaderboard}

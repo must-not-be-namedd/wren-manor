@@ -17,7 +17,11 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
   const progressItems = [
     { completed: progress.p1, label: 'Weapon', path: '/puzzle1' },
     { completed: progress.p2, label: 'Timeline', path: '/puzzle2' },
-    { completed: progress.p3, label: 'Alibis', path: '/puzzle3' }
+    { completed: progress.p3, label: 'Alibis', path: '/puzzle3' },
+    { completed: progress.p4, label: 'Logic', path: '/puzzle4' },
+    { completed: progress.p5, label: 'Cipher', path: '/puzzle5' },
+    { completed: progress.p6, label: 'Evidence', path: '/puzzle6' },
+    { completed: progress.p7, label: 'Verdict', path: '/puzzle7' }
   ];
 
   return (
@@ -52,12 +56,12 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
                   <Clock className="h-4 w-4" />
                   <span>Team: {progress.teamId}</span>
                 </div>
-                <div className="hidden md:flex items-center space-x-2">
+                <div className="hidden lg:flex items-center space-x-1">
                   {progressItems.map((item, index) => (
                     <motion.button
                       key={item.label}
                       onClick={() => item.completed && navigate(item.path)}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-manor ${
+                      className={`px-2 py-1 rounded-md text-xs font-medium transition-manor ${
                         item.completed 
                           ? 'bg-primary/20 text-primary border border-primary/30' 
                           : 'bg-muted/20 text-muted-foreground'
@@ -67,6 +71,11 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
                       {item.label} {item.completed ? '✓' : '•'}
                     </motion.button>
                   ))}
+                </div>
+                <div className="md:hidden lg:hidden flex items-center">
+                  <span className="text-xs text-muted-foreground">
+                    Progress: {progressItems.filter(p => p.completed).length}/{progressItems.length}
+                  </span>
                 </div>
               </div>
             )}

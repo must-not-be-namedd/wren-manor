@@ -47,8 +47,16 @@ const Home = () => {
   };
 
   const handleContinueGame = () => {
-    if (progress.p3) {
+    if (progress.p7) {
       navigate('/results');
+    } else if (progress.p6) {
+      navigate('/puzzle7');
+    } else if (progress.p5) {
+      navigate('/puzzle6');
+    } else if (progress.p4) {
+      navigate('/puzzle5');
+    } else if (progress.p3) {
+      navigate('/puzzle4');
     } else if (progress.p2) {
       navigate('/puzzle3');
     } else if (progress.p1) {
@@ -90,8 +98,8 @@ const Home = () => {
           >
             The shadows of Wren Manor conceal a deadly secret. A murder has been committed, 
             and only the most cunning investigators can uncover the truth. Navigate through 
-            three challenging puzzles to reveal the weapon, reconstruct the timeline, 
-            and expose the killer.
+            seven challenging puzzles to reveal the weapon, decode secret messages, 
+            and expose the killer in this immersive murder mystery experience.
           </motion.p>
         </motion.div>
 
@@ -126,14 +134,14 @@ const Home = () => {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Progress:</span>
                       <span className="text-primary font-medium">
-                        {[progress.p1, progress.p2, progress.p3].filter(Boolean).length}/3 Puzzles
+                        {[progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7].filter(Boolean).length}/7 Puzzles
                       </span>
                     </div>
                     <div className="w-full bg-muted/20 rounded-full h-2">
                       <div 
                         className="bg-gradient-blood h-2 rounded-full transition-all duration-500"
                         style={{ 
-                          width: `${([progress.p1, progress.p2, progress.p3].filter(Boolean).length / 3) * 100}%` 
+                          width: `${([progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7].filter(Boolean).length / 7) * 100}%` 
                         }}
                       />
                     </div>
@@ -201,11 +209,11 @@ const Home = () => {
           <ManorCard className="text-center">
             <ManorCardHeader>
               <Crown className="h-12 w-12 text-accent mx-auto mb-2 animate-glow" />
-              <ManorCardTitle className="text-lg">Three Deadly Puzzles</ManorCardTitle>
+              <ManorCardTitle className="text-lg">Seven Deadly Puzzles</ManorCardTitle>
             </ManorCardHeader>
             <ManorCardContent>
               <ManorCardDescription>
-                Uncover the weapon, reconstruct the timeline, and place suspects in this immersive murder mystery.
+                Uncover the weapon, decode ciphers, analyze evidence, and solve logic puzzles in this immersive murder mystery.
               </ManorCardDescription>
             </ManorCardContent>
           </ManorCard>
