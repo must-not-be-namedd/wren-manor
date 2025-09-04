@@ -1,0 +1,97 @@
+import { ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import { Skull, Crown, Clock } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { getGameProgress } from '@/lib/gameState';
+
+interface LayoutProps {
+  children: ReactNode;
+  showProgress?: boolean;
+}
+
+export const Layout = ({ children, showProgress = true }: LayoutProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const progress = getGameProgress();
+
+  const progressItems = [
+    { completed: progress.p1, label: 'Weapon', path: '/puzzle1' },
+    { completed: progress.p2, label: 'Timeline', path: '/puzzle2' },
+    { completed: progress.p3, label: 'Alibis', path: '/puzzle3' }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-manor">
+      {/* Header */}
+      <header className="relative border-b border-border bg-card/50 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <motion.div 
+              className="flex items-center space-x-3 cursor-pointer"
+              onClick={() => navigate('/')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="relative">
+                <Skull className="h-8 w-8 text-primary animate-pulse-blood" />
+                <Crown className="h-4 w-4 text-accent absolute -top-1 -right-1" />
+              </div>
+              <div>
+                <h1 className="font-manor text-2xl font-bold text-foreground">
+                  Wren Manor
+                </h1>
+                <p className="text-sm text-muted-foreground font-body">
+                  A Murder Mystery
+                </p>
+              </div>
+            </motion.div>
+
+            {showProgress && progress.playerName && (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>Team: {progress.teamId}</span>
+                </div>
+                <div className="hidden md:flex items-center space-x-2">
+                  {progressItems.map((item, index) => (
+                    <motion.button
+                      key={item.label}
+                      onClick={() => item.completed && navigate(item.path)}
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-manor ${
+                        item.completed 
+                          ? 'bg-primary/20 text-primary border border-primary/30' 
+                          : 'bg-muted/20 text-muted-foreground'
+                      } ${item.completed ? 'cursor-pointer hover:bg-primary/30' : 'cursor-not-allowed'}`}
+                      whileHover={item.completed ? { scale: 1.05 } : {}}
+                    >
+                      {item.label} {item.completed ? '✓' : '•'}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto w-full max-w-6xl px-4 py-8">
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.4 }}
+        >
+          {children}
+        </motion.div>
+      </main>
+
+      {/* Atmospheric Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-glow" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse-blood" />
+      </div>
+    </div>
+  );
+};

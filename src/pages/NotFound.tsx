@@ -12,12 +12,18 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
+    <div className="min-h-screen flex items-center justify-center bg-gradient-manor">
+      <div className="text-center space-y-6 p-8">
+        <div className="text-8xl mb-6">👻</div>
+        <h1 className="font-manor text-4xl font-bold text-foreground mb-4">Lost in the Manor</h1>
+        <p className="text-xl text-muted-foreground mb-6 font-body">
+          The shadows have led you astray. This room does not exist in Wren Manor.
+        </p>
+        <a 
+          href="/" 
+          className="inline-flex items-center px-6 py-3 bg-gradient-blood text-primary-foreground rounded-lg font-manor font-medium transition-manor hover:shadow-blood hover:scale-105"
+        >
+          Return to the Manor
         </a>
       </div>
     </div>

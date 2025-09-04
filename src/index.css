@@ -2,41 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Crimson+Text:wght@400;600&display=swap');
+
+/* Wren Manor Murder Mystery Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Manor Color Palette */
+    --background: 260 20% 8%;
+    --foreground: 43 100% 90%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 260 15% 12%;
+    --card-foreground: 43 100% 90%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 260 15% 12%;
+    --popover-foreground: 43 100% 90%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 350 85% 45%;
+    --primary-foreground: 43 100% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 260 10% 18%;
+    --secondary-foreground: 43 80% 85%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 260 8% 15%;
+    --muted-foreground: 43 40% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 43 85% 55%;
+    --accent-foreground: 260 20% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 43 100% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 260 8% 20%;
+    --input: 260 8% 15%;
+    --ring: 350 85% 45%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Murder Mystery Gradients */
+    --gradient-manor: linear-gradient(135deg, hsl(260 20% 8%), hsl(260 15% 12%));
+    --gradient-blood: linear-gradient(135deg, hsl(350 85% 45%), hsl(350 75% 35%));
+    --gradient-candlelight: linear-gradient(135deg, hsl(43 85% 55%), hsl(43 75% 45%));
+    --gradient-shadow: linear-gradient(180deg, hsl(260 20% 8% / 0), hsl(260 30% 5% / 0.8));
+
+    /* Atmospheric Shadows */
+    --shadow-manor: 0 25px 50px -12px hsl(260 30% 5% / 0.8);
+    --shadow-blood: 0 10px 30px -5px hsl(350 85% 45% / 0.3);
+    --shadow-candlelight: 0 0 40px hsl(43 85% 55% / 0.4);
+
+    /* Typography */
+    --font-manor: 'Cinzel', serif;
+    --font-body: 'Crimson Text', serif;
+
+    /* Animations */
+    --transition-manor: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-blood: all 0.2s ease-out;
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +121,104 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    background: var(--gradient-manor);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-manor);
+  }
+}
+
+@layer utilities {
+  /* Manor Theme Utilities */
+  .bg-gradient-manor {
+    background: var(--gradient-manor);
+  }
+  
+  .bg-gradient-blood {
+    background: var(--gradient-blood);
+  }
+  
+  .bg-gradient-candlelight {
+    background: var(--gradient-candlelight);
+  }
+  
+  .shadow-manor {
+    box-shadow: var(--shadow-manor);
+  }
+  
+  .shadow-blood {
+    box-shadow: var(--shadow-blood);
+  }
+  
+  .shadow-candlelight {
+    box-shadow: var(--shadow-candlelight);
+  }
+  
+  .transition-manor {
+    transition: var(--transition-manor);
+  }
+  
+  .transition-blood {
+    transition: var(--transition-blood);
+  }
+
+  /* Animation Classes */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-pulse-blood {
+    animation: pulseBlood 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px hsl(43 85% 55% / 0.3);
+  }
+  to {
+    box-shadow: 0 0 40px hsl(43 85% 55% / 0.6);
+  }
+}
+
+@keyframes pulseBlood {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(350 85% 45% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(350 85% 45% / 0.8);
   }
 }
