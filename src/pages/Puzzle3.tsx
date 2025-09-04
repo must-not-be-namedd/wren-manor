@@ -244,7 +244,7 @@ const Puzzle3 = () => {
         });
 
         setTimeout(() => {
-          navigate('/results');
+          navigate('/puzzle4');
         }, 3000);
       } else {
         toast({
@@ -258,7 +258,7 @@ const Puzzle3 = () => {
   };
 
   const handleViewResults = () => {
-    navigate('/results');
+    navigate('/puzzle4');
   };
 
   if (!progress.playerName || !progress.teamId || !progress.p1 || !progress.p2) {
