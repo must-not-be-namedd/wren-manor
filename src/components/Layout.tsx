@@ -21,7 +21,9 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
     { completed: progress.p4, label: 'Logic', path: '/puzzle4' },
     { completed: progress.p5, label: 'Cipher', path: '/puzzle5' },
     { completed: progress.p6, label: 'Evidence', path: '/puzzle6' },
-    { completed: progress.p7, label: 'Verdict', path: '/puzzle7' }
+    { completed: progress.p7, label: 'Verdict', path: '/puzzle7' },
+    { completed: progress.p8, label: 'Inspect', path: '/puzzle8' },
+    { completed: progress.p9, label: 'Final', path: '/puzzle9' }
   ];
 
   return (
@@ -57,20 +59,27 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
                   <span>Team: {progress.teamId}</span>
                 </div>
                 <div className="hidden lg:flex items-center space-x-1">
-                  {progressItems.map((item, index) => (
-                    <motion.button
-                      key={item.label}
-                      onClick={() => item.completed && navigate(item.path)}
-                      className={`px-2 py-1 rounded-md text-xs font-medium transition-manor ${
-                        item.completed 
-                          ? 'bg-primary/20 text-primary border border-primary/30' 
-                          : 'bg-muted/20 text-muted-foreground'
-                      } ${item.completed ? 'cursor-pointer hover:bg-primary/30' : 'cursor-not-allowed'}`}
-                      whileHover={item.completed ? { scale: 1.05 } : {}}
-                    >
-                      {item.label} {item.completed ? '✓' : '•'}
-                    </motion.button>
-                  ))}
+                  {progressItems.map((item, index) => {
+                    // A puzzle is accessible if the previous puzzle is completed (or it's the first puzzle)
+                    const isAccessible = index === 0 || progressItems[index - 1]?.completed;
+                    
+                    return (
+                      <motion.button
+                        key={item.label}
+                        onClick={() => isAccessible && navigate(item.path)}
+                        className={`px-2 py-1 rounded-md text-xs font-medium transition-manor ${
+                          item.completed 
+                            ? 'bg-primary/20 text-primary border border-primary/30' 
+                            : isAccessible 
+                              ? 'bg-accent/20 text-accent border border-accent/30'
+                              : 'bg-muted/20 text-muted-foreground'
+                        } ${isAccessible ? 'cursor-pointer hover:bg-primary/30' : 'cursor-not-allowed'}`}
+                        whileHover={isAccessible ? { scale: 1.05 } : {}}
+                      >
+                        {item.label} {item.completed ? '✓' : isAccessible ? '•' : '🔒'}
+                      </motion.button>
+                    );
+                  })}
                 </div>
                 <div className="md:hidden lg:hidden flex items-center">
                   <span className="text-xs text-muted-foreground">
