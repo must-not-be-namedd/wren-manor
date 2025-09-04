@@ -33,11 +33,11 @@ const Puzzle2 = () => {
   }, [progress, navigate]);
 
   const correctEvents: Event[] = [
-    { id: 1, text: "Lady Wren hosts the evening gathering", time: "7:30 PM" },
-    { id: 2, text: "Mysterious guest arrives at the manor", time: "8:00 PM" },
-    { id: 3, text: "Lights flicker during dinner service", time: "8:15 PM" },
-    { id: 4, text: "Loud crash heard from the library", time: "8:20 PM" },
-    { id: 5, text: "Complete blackout engulfs the manor", time: "8:45 PM" }
+    { id: 1, text: "Lady Wren hosts the evening gathering", time: "" },
+    { id: 2, text: "Mysterious guest arrives at the manor", time: "" },
+    { id: 3, text: "Lights flicker during dinner service", time: "" },
+    { id: 4, text: "Loud crash heard from the library", time: "" },
+    { id: 5, text: "Complete blackout engulfs the manor", time: "" }
   ];
 
   const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
@@ -242,7 +242,6 @@ const Puzzle2 = () => {
                           <GripVertical className="h-4 w-4 text-muted-foreground" />
                           <div className="flex-1">
                             <p className="text-sm font-medium text-foreground">{event.text}</p>
-                            <p className="text-xs text-muted-foreground">{event.time}</p>
                           </div>
                         </div>
                       </motion.div>
@@ -295,9 +294,6 @@ const Puzzle2 = () => {
                               <div className="flex-1">
                                 <p className="text-sm font-medium text-foreground">
                                   {timelineEvents[index].text}
-                                </p>
-                                <p className="text-xs text-primary font-semibold">
-                                  {timelineEvents[index].time}
                                 </p>
                               </div>
                               <GripVertical className="h-4 w-4 text-muted-foreground" />

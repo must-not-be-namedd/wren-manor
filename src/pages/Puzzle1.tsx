@@ -28,7 +28,7 @@ const Puzzle1 = () => {
     }
   }, [progress.playerName, progress.teamId, navigate]);
 
-  const scrambledLetters = ['D', 'A', 'G', 'G', 'E', 'R'];
+  const scrambledLetters = ['R', 'G', 'A', 'D', 'G', 'E'];
   const correctAnswer = 'DAGGER';
 
   const handleSubmit = () => {
