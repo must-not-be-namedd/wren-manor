@@ -46,10 +46,10 @@ const Results = () => {
 
   const completedPuzzles = [
     progress.p1, progress.p2, progress.p3, progress.p4, 
-    progress.p5, progress.p6, progress.p7
+    progress.p5, progress.p6, progress.p7, progress.p8, progress.p9
   ].filter(Boolean).length;
   
-  const totalPuzzles = 7;
+  const totalPuzzles = 9;
   const allCompleted = completedPuzzles === totalPuzzles;
 
   const completionTime = progress.completionTime || 0;
@@ -143,7 +143,7 @@ const Results = () => {
               </div>
 
               {/* Puzzle Status Grid */}
-              <div className="grid md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                 {[
                   { key: 'p1', label: 'Weapon', icon: '🗡️' },
                   { key: 'p2', label: 'Timeline', icon: '⏰' },
@@ -151,36 +151,81 @@ const Results = () => {
                   { key: 'p4', label: 'Logic', icon: '🧠' },
                   { key: 'p5', label: 'Cipher', icon: '🔐' },
                   { key: 'p6', label: 'Evidence', icon: '🔍' },
-                  { key: 'p7', label: 'Verdict', icon: '⚖️' }
+                  { key: 'p7', label: 'Verdict', icon: '⚖️' },
+                  { key: 'p8', label: 'Inspect', icon: '🕵️' },
+                  { key: 'p9', label: 'Final', icon: '🎯' }
                 ].map((puzzle, index) => (
-                  <div key={puzzle.key} className={`text-center p-3 rounded-lg border ${
-                    progress[puzzle.key as keyof typeof progress] 
-                      ? 'bg-green-500/10 border-green-500/30' 
-                      : 'bg-muted/10 border-border'
-                  }`}>
+                  <motion.div 
+                    key={puzzle.key} 
+                    className={`text-center p-3 rounded-lg border transition-all ${
+                      progress[puzzle.key as keyof typeof progress] 
+                        ? 'bg-green-500/10 border-green-500/30 shadow-green-500/20 shadow-lg' 
+                        : 'bg-muted/10 border-border'
+                    }`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + index * 0.1, duration: 0.4 }}
+                    whileHover={{ scale: 1.05 }}
+                  >
                     <div className="text-lg mb-1">{puzzle.icon}</div>
                     <div className="text-xs font-medium text-foreground">{puzzle.label}</div>
                     {progress[puzzle.key as keyof typeof progress] && (
-                      <div className="text-green-500 text-xs mt-1">✓</div>
+                      <motion.div 
+                        className="text-green-500 text-xs mt-1"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.8 + index * 0.1, type: "spring", stiffness: 200 }}
+                      >
+                        ✓
+                      </motion.div>
                     )}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
               {/* Final Deduction - Only show if case is complete */}
               {allCompleted && (
-                <div className="p-6 bg-accent/10 border border-accent/20 rounded-lg">
+                <motion.div 
+                  className="p-6 bg-gradient-blood/10 border border-primary/30 rounded-lg"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.5, duration: 0.6 }}
+                >
                   <h3 className="font-manor text-xl font-semibold text-foreground mb-3 text-center">
-                    Final Deduction
+                    🎯 Final Deduction 🎯
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed font-body text-center">
-                    Through meticulous investigation across seven challenging puzzles, you have solved 
+                  <p className="text-muted-foreground leading-relaxed font-body text-center mb-4">
+                    Through meticulous investigation across nine challenging puzzles, you have solved 
                     the murder at Wren Manor. <strong className="text-primary">Marcel the Chef</strong> committed 
-                    the crime using a <strong className="text-primary">dagger</strong> from his own kitchen, 
-                    driven by revenge after Lady Wren discovered his theft from the kitchen budget.
+                    the crime using a <strong className="text-primary">dagger</strong> in the <strong className="text-primary">wine cellar</strong>, 
+                    driven by greed and blackmail after receiving suspicious payments.
                   </p>
-                </div>
+                  <div className="text-center">
+                    <Badge className="bg-primary text-primary-foreground px-4 py-2">
+                      🏆 Master Detective Achievement Unlocked 🏆
+                    </Badge>
+                  </div>
+                </motion.div>
               )}
+
+              {/* Completion Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">Investigation Progress</span>
+                  <span className="text-sm text-muted-foreground">{completedPuzzles}/{totalPuzzles}</span>
+                </div>
+                <div className="w-full bg-muted/30 rounded-full h-3">
+                  <motion.div 
+                    className="bg-gradient-blood h-3 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(completedPuzzles / totalPuzzles) * 100}%` }}
+                    transition={{ delay: 0.8, duration: 1.2, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="text-center text-xs text-muted-foreground">
+                  {Math.round((completedPuzzles / totalPuzzles) * 100)}% Complete
+                </div>
+              </div>
 
               {/* Performance Stats */}
               <div className="grid md:grid-cols-2 gap-4">
@@ -215,14 +260,24 @@ const Results = () => {
             <ManorCardContent className="text-center p-8">
               <Trophy className="h-16 w-16 text-accent mx-auto mb-4 animate-glow" />
               <h3 className="font-manor text-2xl font-bold text-foreground mb-2">
-                {allCompleted ? 'Master Detective' : 'Detective in Training'}
+                {allCompleted ? '🏆 Master Detective' : '🕵️ Detective in Training'}
               </h3>
               <p className="text-muted-foreground font-body">
                 {allCompleted 
-                  ? 'You have successfully completed all seven puzzles and solved the murder at Wren Manor.'
-                  : `You have completed ${completedPuzzles} out of ${totalPuzzles} investigations. Keep going to solve the mystery!`
+                  ? 'You have successfully completed all nine puzzles and solved the murder at Wren Manor. The mystery has been unraveled!'
+                  : `You have completed ${completedPuzzles} out of ${totalPuzzles} investigations. Continue your quest to unveil the truth!`
                 }
               </p>
+              {allCompleted && (
+                <motion.div 
+                  className="mt-4 text-accent font-semibold"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2, duration: 0.8 }}
+                >
+                  ⭐ Case Closed: Wren Manor Murder Mystery ⭐
+                </motion.div>
+              )}
             </ManorCardContent>
           </ManorCard>
         </motion.div>
@@ -239,15 +294,19 @@ const Results = () => {
               variant="primary"
               onClick={() => {
                 // Navigate to next uncompleted puzzle
-                const nextPuzzle = progress.p1 && !progress.p2 ? '/puzzle2' :
+                const nextPuzzle = !progress.p1 ? '/puzzle1' :
+                                  progress.p1 && !progress.p2 ? '/puzzle2' :
                                   progress.p2 && !progress.p3 ? '/puzzle3' :
                                   progress.p3 && !progress.p4 ? '/puzzle4' :
                                   progress.p4 && !progress.p5 ? '/puzzle5' :
                                   progress.p5 && !progress.p6 ? '/puzzle6' :
-                                  progress.p6 && !progress.p7 ? '/puzzle7' : '/';
+                                  progress.p6 && !progress.p7 ? '/puzzle7' :
+                                  progress.p7 && !progress.p8 ? '/puzzle8' :
+                                  progress.p8 && !progress.p9 ? '/puzzle9' : '/';
                 navigate(nextPuzzle);
               }}
               size="lg"
+              className="animate-pulse"
             >
               <ArrowRight className="h-4 w-4 mr-2" />
               Continue Investigation
