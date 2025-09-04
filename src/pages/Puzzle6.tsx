@@ -88,7 +88,7 @@ const Puzzle6 = () => {
           <ManorCardHeader>
             <ManorCardTitle>SQL Query Terminal</ManorCardTitle>
             <ManorCardDescription>
-              Try: SELECT * FROM TRANSACTIONS WHERE AMOUNT > 10000
+              Try: SELECT * FROM TRANSACTIONS WHERE AMOUNT &gt; 10000
             </ManorCardDescription>
           </ManorCardHeader>
           <ManorCardContent className="space-y-4">
