@@ -47,8 +47,12 @@ const Home = () => {
   };
 
   const handleContinueGame = () => {
-    if (progress.p7) {
+    if (progress.p9) {
       navigate('/results');
+    } else if (progress.p8) {
+      navigate('/puzzle9');
+    } else if (progress.p7) {
+      navigate('/puzzle8');
     } else if (progress.p6) {
       navigate('/puzzle7');
     } else if (progress.p5) {
@@ -134,15 +138,15 @@ const Home = () => {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Progress:</span>
                       <span className="text-primary font-medium">
-                        {[progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7].filter(Boolean).length}/7 Puzzles
+                        {[progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7, progress.p8, progress.p9].filter(Boolean).length}/9 Puzzles
                       </span>
                     </div>
                     <div className="w-full bg-muted/20 rounded-full h-2">
                       <div 
                         className="bg-gradient-blood h-2 rounded-full transition-all duration-500"
-                        style={{ 
-                          width: `${([progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7].filter(Boolean).length / 7) * 100}%` 
-                        }}
+                         style={{ 
+                           width: `${([progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7, progress.p8, progress.p9].filter(Boolean).length / 9) * 100}%` 
+                         }}
                       />
                     </div>
                   </div>
@@ -209,11 +213,11 @@ const Home = () => {
           <ManorCard className="text-center">
             <ManorCardHeader>
               <Crown className="h-12 w-12 text-accent mx-auto mb-2 animate-glow" />
-              <ManorCardTitle className="text-lg">Seven Deadly Puzzles</ManorCardTitle>
+              <ManorCardTitle className="text-lg">Nine Deadly Puzzles</ManorCardTitle>
             </ManorCardHeader>
             <ManorCardContent>
               <ManorCardDescription>
-                Uncover the weapon, decode ciphers, analyze evidence, and solve logic puzzles in this immersive murder mystery.
+                Uncover weapons, decode ciphers, analyze contradictions, query databases, and expose the killer in this immersive murder mystery.
               </ManorCardDescription>
             </ManorCardContent>
           </ManorCard>

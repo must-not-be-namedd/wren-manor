@@ -1,256 +1,170 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Layout } from "@/components/Layout";
-import { ManorCard, ManorCardHeader, ManorCardTitle, ManorCardContent, ManorCardFooter } from "@/components/ui/manor-card";
-import { ManorButton } from "@/components/ui/manor-button";
-import { toast } from "@/hooks/use-toast";
-import { getGameProgress, saveGameProgress } from "@/lib/gameState";
-import { Search, BookOpen, CheckCircle2, Lightbulb } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { Layout } from '@/components/Layout';
+import { ManorCard, ManorCardContent, ManorCardDescription, ManorCardHeader, ManorCardTitle } from '@/components/ui/manor-card';
+import { ManorButton } from '@/components/ui/manor-button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Database, Terminal, Search, CheckCircle } from 'lucide-react';
+import { getGameProgress, saveGameProgress } from '@/lib/gameState';
+import { useToast } from '@/hooks/use-toast';
 
 const Puzzle6 = () => {
   const navigate = useNavigate();
-  const [progress, setProgress] = useState(getGameProgress());
-  const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
-  const [showRoom, setShowRoom] = useState<string>("");
-  const [solved, setSolved] = useState(progress.p6);
+  const { toast } = useToast();
+  const progress = getGameProgress();
+  
+  const [query, setQuery] = useState('');
+  const [queryResults, setQueryResults] = useState<any[]>([]);
+  const [puzzleSolved, setPuzzleSolved] = useState(false);
 
-  const rooms = {
-    "Library": {
-      description: "Dusty books line the walls. A leather journal lies open on the desk.",
-      evidence: ["Torn Letter", "Bloody Bookmark", "Secret Map", "Old Key"]
-    },
-    "Kitchen": {
-      description: "Pots and pans hang from hooks. A knife set has one missing blade.",
-      evidence: ["Missing Knife", "Spilled Wine", "Chef's Apron", "Recipe Notes"]
-    },
-    "Garden": {
-      description: "Overgrown hedges cast eerie shadows. Fresh soil suggests recent digging.",
-      evidence: ["Muddy Footprints", "Garden Gloves", "Broken Shovel", "Wilted Flowers"]
-    },
-    "Study": {
-      description: "Papers scattered everywhere. A safe stands open and empty.",
-      evidence: ["Burned Documents", "Empty Safe", "Magnifying Glass", "Will Papers"]
-    }
+  const database = {
+    TRANSACTIONS: [
+      { ID: '001', NAME: 'Charles', AMOUNT: 2000, DATE: '2025-08-25', TYPE: 'Salary' },
+      { ID: '002', NAME: 'Margaret', AMOUNT: 1800, DATE: '2025-08-25', TYPE: 'Salary' },
+      { ID: '003', NAME: 'Marcel', AMOUNT: 15000, DATE: '2025-08-30', TYPE: 'Bonus' },
+      { ID: '004', NAME: 'Victoria', AMOUNT: 500, DATE: '2025-09-01', TYPE: 'Donation' }
+    ]
   };
 
-  // Correct evidence: Items that directly connect to Marcel the Chef
-  const correctEvidence = ["Missing Knife", "Chef's Apron", "Bloody Bookmark"];
-
   useEffect(() => {
-    // Check if previous puzzles are completed
-    if (!progress.p1 || !progress.p2 || !progress.p3 || !progress.p4 || !progress.p5) {
-      navigate("/");
+    if (!progress.p5) {
+      navigate('/');
       return;
     }
   }, [progress, navigate]);
 
-  const handleEvidenceToggle = (evidence: string) => {
-    if (solved) return;
+  const executeQuery = () => {
+    const normalizedQuery = query.trim().toUpperCase();
+    let results: any[] = [];
     
-    setSelectedEvidence(prev => 
-      prev.includes(evidence) 
-        ? prev.filter(e => e !== evidence)
-        : [...prev, evidence]
-    );
-  };
-
-  const handleSubmit = () => {
-    // Check if selected evidence matches the correct evidence
-    const hasAllCorrect = correctEvidence.every(item => selectedEvidence.includes(item));
-    const hasOnlyCorrect = selectedEvidence.every(item => correctEvidence.includes(item));
-    const correctCount = selectedEvidence.length === correctEvidence.length;
-
-    if (hasAllCorrect && hasOnlyCorrect && correctCount) {
-      const newProgress = {
-        ...progress,
-        p6: true,
-        currentPage: 6
-      };
+    if (normalizedQuery.includes('AMOUNT > 10000')) {
+      results = database.TRANSACTIONS.filter(row => row.AMOUNT > 10000);
       
-      setProgress(newProgress);
-      saveGameProgress(newProgress);
-      setSolved(true);
-      
-      toast({
-        title: "Evidence Analyzed!",
-        description: "You've identified the key evidence linking Marcel to the crime scene.",
-        variant: "default"
-      });
-    } else {
-      toast({
-        title: "Incomplete Analysis",
-        description: "Some evidence doesn't directly link to the killer. Review your selections.",
-        variant: "destructive"
-      });
+      if (results.length > 0 && !puzzleSolved) {
+        const newProgress = { ...progress, p6: true };
+        saveGameProgress(newProgress);
+        setPuzzleSolved(true);
+        
+        toast({
+          title: "Motive Discovered!",
+          description: "Marcel received a suspicious £15,000 bonus payment!",
+          variant: "default",
+        });
+      }
     }
+    
+    setQueryResults(results);
   };
 
   const handleNext = () => {
-    navigate("/puzzle7");
+    navigate('/puzzle7');
   };
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-manor flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="w-full max-w-6xl space-y-6"
-        >
-          {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-manor font-bold text-foreground">
-              The Evidence Chamber
-            </h1>
-            <p className="text-muted-foreground font-body">
-              Search each room and identify evidence that directly links to Marcel the Chef
-            </p>
+      <motion.div
+        className="max-w-4xl mx-auto space-y-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="text-center space-y-4">
+          <div className="flex justify-center items-center space-x-3 mb-6">
+            <Database className="h-8 w-8 text-primary animate-pulse-blood" />
+            <h1 className="font-manor text-4xl font-bold text-foreground">Query the Killer</h1>
+            <Terminal className="h-8 w-8 text-accent animate-glow" />
           </div>
+          
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Use SQL queries to search the manor's database and uncover evidence 
+            that reveals the killer's motive.
+          </p>
+        </div>
 
-          {/* Room Explorer */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {Object.entries(rooms).map(([roomName, roomData]) => (
-              <motion.div
-                key={roomName}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <ManorButton
-                  variant={showRoom === roomName ? "primary" : "secondary"}
-                  className="w-full h-20 text-lg"
-                  onClick={() => setShowRoom(showRoom === roomName ? "" : roomName)}
-                >
-                  <Search className="w-5 h-5 mr-2" />
-                  {roomName}
-                </ManorButton>
-              </motion.div>
-            ))}
-          </div>
+        <ManorCard>
+          <ManorCardHeader>
+            <ManorCardTitle>SQL Query Terminal</ManorCardTitle>
+            <ManorCardDescription>
+              Try: SELECT * FROM TRANSACTIONS WHERE AMOUNT > 10000
+            </ManorCardDescription>
+          </ManorCardHeader>
+          <ManorCardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="query">Query:</Label>
+              <Input
+                id="query"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="SELECT * FROM TRANSACTIONS WHERE..."
+                className="font-mono"
+                onKeyDown={(e) => e.key === 'Enter' && executeQuery()}
+              />
+            </div>
+            
+            <ManorButton onClick={executeQuery}>Execute Query</ManorButton>
+          </ManorCardContent>
+        </ManorCard>
 
-          {/* Room Details */}
-          {showRoom && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              <ManorCard className="backdrop-blur-md">
-                <ManorCardHeader>
-                  <ManorCardTitle className="flex items-center gap-2">
-                    <BookOpen className="w-6 h-6 text-primary" />
-                    {showRoom} Investigation
-                  </ManorCardTitle>
-                </ManorCardHeader>
-                <ManorCardContent className="space-y-4">
-                  <p className="text-foreground font-body italic">
-                    {rooms[showRoom as keyof typeof rooms].description}
-                  </p>
-                  
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {rooms[showRoom as keyof typeof rooms].evidence.map((evidence) => (
-                      <motion.div
-                        key={evidence}
-                        whileHover={{ scale: 1.02 }}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                          selectedEvidence.includes(evidence)
-                            ? 'border-primary bg-primary/10'
-                            : 'border-border bg-secondary/20 hover:bg-secondary/30'
-                        }`}
-                        onClick={() => handleEvidenceToggle(evidence)}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                            selectedEvidence.includes(evidence)
-                              ? 'border-primary bg-primary'
-                              : 'border-muted-foreground'
-                          }`}>
-                            {selectedEvidence.includes(evidence) && (
-                              <CheckCircle2 className="w-3 h-3 text-primary-foreground" />
-                            )}
-                          </div>
-                          <span className="text-foreground font-body">{evidence}</span>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </ManorCardContent>
-              </ManorCard>
-            </motion.div>
-          )}
-
-          {/* Evidence Analysis */}
-          <ManorCard className="backdrop-blur-md">
+        {queryResults.length > 0 && (
+          <ManorCard>
             <ManorCardHeader>
-              <ManorCardTitle className="flex items-center gap-2">
-                <Lightbulb className="w-6 h-6 text-primary" />
-                Evidence Analysis
-              </ManorCardTitle>
+              <ManorCardTitle>Query Results</ManorCardTitle>
             </ManorCardHeader>
-            <ManorCardContent className="space-y-4">
-              <p className="text-foreground font-body">
-                Based on your investigation in the previous puzzles, select only the evidence that directly connects <strong>Marcel the Chef</strong> to the murder scene.
-              </p>
-              
-              {selectedEvidence.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="font-manor font-semibold text-foreground">Selected Evidence:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedEvidence.map((evidence) => (
-                      <span
-                        key={evidence}
-                        className="px-3 py-1 bg-primary/20 border border-primary/30 rounded-full text-primary text-sm"
-                      >
-                        {evidence}
-                      </span>
+            <ManorCardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      {Object.keys(queryResults[0]).map(key => (
+                        <th key={key} className="text-left p-2">{key}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {queryResults.map((row, index) => (
+                      <tr key={index} className="border-b">
+                        {Object.values(row).map((value, i) => (
+                          <td key={i} className="p-2">{String(value)}</td>
+                        ))}
+                      </tr>
                     ))}
-                  </div>
-                </div>
-              )}
-
-              {solved && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-4 bg-primary/10 border border-primary/20 rounded-lg"
-                >
-                  <p className="text-primary font-body text-center">
-                    <CheckCircle2 className="w-5 h-5 inline mr-2" />
-                    Perfect analysis! The evidence clearly links Marcel to the crime through his kitchen access and the murder weapon.
-                  </p>
-                </motion.div>
-              )}
-            </ManorCardContent>
-            <ManorCardFooter className="flex justify-between">
-              <p className="text-sm text-muted-foreground font-body">
-                Evidence selected: {selectedEvidence.length}
-              </p>
-              
-              <div className="flex gap-3">
-                <ManorButton
-                  variant="outline"
-                  onClick={handleSubmit}
-                  disabled={selectedEvidence.length === 0 || solved}
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Analyze Evidence
-                </ManorButton>
-                
-                {solved && (
-                  <ManorButton
-                    variant="primary"
-                    onClick={handleNext}
-                  >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Final Challenge
-                  </ManorButton>
-                )}
+                  </tbody>
+                </table>
               </div>
-            </ManorCardFooter>
+            </ManorCardContent>
           </ManorCard>
-        </motion.div>
-      </div>
+        )}
+
+        {puzzleSolved && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <ManorCard className="bg-gradient-blood border-primary text-center">
+              <ManorCardContent className="pt-6">
+                <CheckCircle className="h-16 w-16 text-primary-foreground mx-auto mb-4" />
+                <h3 className="font-manor text-2xl text-primary-foreground mb-2">
+                  Motive Revealed!
+                </h3>
+                <p className="text-primary-foreground/90 mb-6">
+                  Marcel received £15,000 just before the murder. Someone was paying him well!
+                </p>
+                <ManorButton 
+                  onClick={handleNext}
+                  variant="secondary"
+                  size="lg"
+                  className="bg-primary-foreground text-primary"
+                >
+                  Decode the Pattern
+                </ManorButton>
+              </ManorCardContent>
+            </ManorCard>
+          </motion.div>
+        )}
+      </motion.div>
     </Layout>
   );
 };
