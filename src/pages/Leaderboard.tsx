@@ -39,10 +39,12 @@ const Leaderboard = () => {
   };
 
   const getProgressBadge = (progress: number) => {
-    if (progress === 3) return { text: 'Complete', variant: 'default' as const, color: 'text-green-500' };
-    if (progress === 2) return { text: 'Advanced', variant: 'secondary' as const, color: 'text-yellow-500' };
-    if (progress === 1) return { text: 'Beginner', variant: 'outline' as const, color: 'text-blue-500' };
-    return { text: 'Starting', variant: 'outline' as const, color: 'text-muted-foreground' };
+    if (progress === 9) return { text: 'Master Detective', variant: 'default' as const, color: 'text-green-500', icon: '🏆' };
+    if (progress >= 7) return { text: 'Expert', variant: 'secondary' as const, color: 'text-blue-500', icon: '🕵️' };
+    if (progress >= 5) return { text: 'Advanced', variant: 'secondary' as const, color: 'text-purple-500', icon: '🎯' };
+    if (progress >= 3) return { text: 'Intermediate', variant: 'outline' as const, color: 'text-yellow-500', icon: '🔍' };
+    if (progress >= 1) return { text: 'Beginner', variant: 'outline' as const, color: 'text-orange-500', icon: '🔰' };
+    return { text: 'Starting', variant: 'outline' as const, color: 'text-muted-foreground', icon: '🚪' };
   };
 
   const getRankIcon = (index: number) => {
@@ -110,26 +112,26 @@ const Leaderboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <div className="grid md:grid-cols-3 gap-4">
-            <ManorCard className="text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <ManorCard className="text-center hover-scale">
               <ManorCardContent className="p-4">
-                <Users className="h-8 w-8 text-primary mx-auto mb-2" />
+                <Users className="h-8 w-8 text-primary mx-auto mb-2 animate-pulse" />
                 <div className="text-2xl font-bold text-foreground">{leaderboard.length}</div>
                 <div className="text-sm text-muted-foreground">Total Investigators</div>
               </ManorCardContent>
             </ManorCard>
 
-            <ManorCard className="text-center">
+            <ManorCard className="text-center hover-scale">
               <ManorCardContent className="p-4">
-                <Trophy className="h-8 w-8 text-accent mx-auto mb-2" />
+                <Trophy className="h-8 w-8 text-accent mx-auto mb-2 animate-glow" />
                 <div className="text-2xl font-bold text-foreground">
-                  {leaderboard.filter(entry => entry.currentProgress === 3).length}
+                  {leaderboard.filter(entry => entry.currentProgress === 9).length}
                 </div>
                 <div className="text-sm text-muted-foreground">Cases Solved</div>
               </ManorCardContent>
             </ManorCard>
 
-            <ManorCard className="text-center">
+            <ManorCard className="text-center hover-scale">
               <ManorCardContent className="p-4">
                 <Clock className="h-8 w-8 text-accent mx-auto mb-2" />
                 <div className="text-2xl font-bold text-foreground">
@@ -139,6 +141,16 @@ const Leaderboard = () => {
                   }
                 </div>
                 <div className="text-sm text-muted-foreground">Best Time</div>
+              </ManorCardContent>
+            </ManorCard>
+
+            <ManorCard className="text-center hover-scale">
+              <ManorCardContent className="p-4">
+                <Medal className="h-8 w-8 text-yellow-500 mx-auto mb-2 animate-bounce" />
+                <div className="text-2xl font-bold text-foreground">
+                  {leaderboard.length > 0 ? Math.round(leaderboard.reduce((acc, entry) => acc + entry.currentProgress, 0) / leaderboard.length * 10) / 10 : 0}
+                </div>
+                <div className="text-sm text-muted-foreground">Avg Progress</div>
               </ManorCardContent>
             </ManorCard>
           </div>
@@ -174,52 +186,119 @@ const Leaderboard = () => {
                   {leaderboard.map((entry, index) => {
                     const progressBadge = getProgressBadge(entry.currentProgress);
                     const isCurrentUser = isCurrentPlayer(entry);
+                    const progressPercentage = (entry.currentProgress / 9) * 100;
                     
                     return (
                       <motion.div
                         key={`${entry.playerName}-${entry.teamId}-${entry.timestamp}`}
-                        className={`flex items-center justify-between p-4 rounded-lg border transition-manor ${
+                        className={`relative overflow-hidden rounded-lg border transition-all duration-300 ${
                           isCurrentUser 
-                            ? 'bg-primary/10 border-primary/30 shadow-blood' 
-                            : 'bg-card/30 border-border hover:bg-card/50'
+                            ? 'bg-gradient-blood/10 border-primary/30 shadow-blood ring-2 ring-primary/20' 
+                            : 'bg-card/30 border-border hover:bg-card/50 hover:border-primary/20'
                         }`}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1, duration: 0.4 }}
+                        initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        transition={{ delay: index * 0.1, duration: 0.4, type: "spring" }}
+                        whileHover={{ scale: 1.02, y: -2 }}
                       >
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center justify-center w-12">
-                            {getRankIcon(index)}
-                          </div>
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <h3 className={`font-semibold ${isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
-                                {entry.playerName}
-                              </h3>
-                              {isCurrentUser && (
-                                <Badge variant="outline" className="text-xs px-2 py-0 text-primary border-primary/30">
-                                  You
+                        {/* Progress Bar Background */}
+                        <div 
+                          className={`absolute inset-0 ${isCurrentUser ? 'bg-primary/5' : 'bg-accent/3'}`}
+                          style={{ 
+                            background: `linear-gradient(to right, ${isCurrentUser ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--accent) / 0.05)'} ${progressPercentage}%, transparent ${progressPercentage}%)`
+                          }}
+                        />
+                        
+                        <div className="relative flex items-center justify-between p-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center justify-center w-12">
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: index * 0.1 + 0.2, type: "spring", stiffness: 200 }}
+                              >
+                                {getRankIcon(index)}
+                              </motion.div>
+                            </div>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2">
+                                <h3 className={`font-semibold ${isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
+                                  {entry.playerName}
+                                </h3>
+                                {isCurrentUser && (
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ delay: 0.5, type: "spring" }}
+                                  >
+                                    <Badge variant="outline" className="text-xs px-2 py-0 text-primary border-primary/30 animate-pulse">
+                                      You
+                                    </Badge>
+                                  </motion.div>
+                                )}
+                                {index < 3 && (
+                                  <motion.div
+                                    animate={{ rotate: [0, 10, -10, 0] }}
+                                    transition={{ duration: 2, repeat: Infinity, delay: index }}
+                                  >
+                                    <span className="text-lg">
+                                      {index === 0 ? '👑' : index === 1 ? '🥈' : '🥉'}
+                                    </span>
+                                  </motion.div>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-3 mt-1">
+                                <span className="text-sm text-muted-foreground">
+                                  Team: {entry.teamId}
+                                </span>
+                                <Badge variant={progressBadge.variant} className={`text-xs ${progressBadge.color} flex items-center space-x-1`}>
+                                  <span>{progressBadge.icon}</span>
+                                  <span>{progressBadge.text}</span>
                                 </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-3 mt-1">
-                              <span className="text-sm text-muted-foreground">
-                                Team: {entry.teamId}
-                              </span>
-                              <Badge variant={progressBadge.variant} className={`text-xs ${progressBadge.color}`}>
-                                {progressBadge.text}
-                              </Badge>
+                              </div>
+                              
+                              {/* Progress Bar */}
+                              <div className="mt-2">
+                                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                  <span>Progress</span>
+                                  <span>{entry.currentProgress}/9</span>
+                                </div>
+                                <div className="w-full bg-muted/30 rounded-full h-2">
+                                  <motion.div 
+                                    className={`h-2 rounded-full ${isCurrentUser ? 'bg-gradient-blood' : 'bg-gradient-candlelight'}`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progressPercentage}%` }}
+                                    transition={{ delay: index * 0.1 + 0.5, duration: 0.8, ease: "easeOut" }}
+                                  />
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="text-right space-y-1">
-                          <div className="text-sm font-medium text-foreground">
-                            {entry.currentProgress}/3 Puzzles
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {formatTime(entry.completionTime)}
+                          <div className="text-right space-y-1">
+                            <motion.div 
+                              className="text-sm font-medium text-foreground"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: index * 0.1 + 0.3 }}
+                            >
+                              {Math.round(progressPercentage)}% Complete
+                            </motion.div>
+                            <div className="text-xs text-muted-foreground">
+                              {formatTime(entry.completionTime)}
+                            </div>
+                            {entry.currentProgress === 9 && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: index * 0.1 + 0.6, type: "spring" }}
+                              >
+                                <Badge className="bg-green-500 text-white text-xs animate-pulse">
+                                  🎉 Solved!
+                                </Badge>
+                              </motion.div>
+                            )}
                           </div>
                         </div>
                       </motion.div>
@@ -230,6 +309,74 @@ const Leaderboard = () => {
             </ManorCardContent>
           </ManorCard>
         </motion.div>
+
+        {/* Top Performers Spotlight */}
+        {leaderboard.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            <ManorCard className="bg-gradient-candlelight/5 border-accent/20">
+              <ManorCardHeader className="text-center">
+                <ManorCardTitle className="flex items-center justify-center space-x-2 text-accent">
+                  <Crown className="h-6 w-6 animate-glow" />
+                  <span>Hall of Fame</span>
+                  <Crown className="h-6 w-6 animate-glow" />
+                </ManorCardTitle>
+                <ManorCardDescription>
+                  Top 3 investigators who have made exceptional progress
+                </ManorCardDescription>
+              </ManorCardHeader>
+              <ManorCardContent>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {leaderboard.slice(0, 3).map((entry, index) => (
+                    <motion.div
+                      key={`spotlight-${entry.playerName}-${entry.teamId}`}
+                      className={`text-center p-4 rounded-lg border-2 ${
+                        index === 0 ? 'border-yellow-500/30 bg-yellow-500/5' :
+                        index === 1 ? 'border-gray-400/30 bg-gray-400/5' :
+                        'border-orange-500/30 bg-orange-500/5'
+                      }`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 + index * 0.1, type: "spring" }}
+                    >
+                      <motion.div 
+                        className="text-4xl mb-2"
+                        animate={{ 
+                          scale: index === 0 ? [1, 1.1, 1] : 1,
+                          rotate: index === 0 ? [0, 5, -5, 0] : 0
+                        }}
+                        transition={{ 
+                          duration: index === 0 ? 2 : 0,
+                          repeat: index === 0 ? Infinity : 0
+                        }}
+                      >
+                        {index === 0 ? '👑' : index === 1 ? '🥈' : '🥉'}
+                      </motion.div>
+                      <h4 className="font-manor font-bold text-foreground mb-1">
+                        {entry.playerName}
+                      </h4>
+                      <div className="text-sm text-muted-foreground mb-2">
+                        Team: {entry.teamId}
+                      </div>
+                      <div className={`text-lg font-bold mb-1 ${
+                        index === 0 ? 'text-yellow-500' :
+                        index === 1 ? 'text-gray-400' : 'text-orange-500'
+                      }`}>
+                        {entry.currentProgress}/9
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatTime(entry.completionTime)}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </ManorCardContent>
+            </ManorCard>
+          </motion.div>
+        )}
 
         {/* Call to Action */}
         {currentProgress.playerName && (
