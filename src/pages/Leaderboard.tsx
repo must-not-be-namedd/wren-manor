@@ -112,7 +112,7 @@ const Leaderboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <ManorCard className="text-center hover-scale">
               <ManorCardContent className="p-4">
                 <Users className="h-8 w-8 text-primary mx-auto mb-2 animate-pulse" />
@@ -141,16 +141,6 @@ const Leaderboard = () => {
                   }
                 </div>
                 <div className="text-sm text-muted-foreground">Best Time</div>
-              </ManorCardContent>
-            </ManorCard>
-
-            <ManorCard className="text-center hover-scale">
-              <ManorCardContent className="p-4">
-                <Medal className="h-8 w-8 text-yellow-500 mx-auto mb-2 animate-bounce" />
-                <div className="text-2xl font-bold text-foreground">
-                  {leaderboard.length > 0 ? Math.round(leaderboard.reduce((acc, entry) => acc + entry.currentProgress, 0) / leaderboard.length * 10) / 10 : 0}
-                </div>
-                <div className="text-sm text-muted-foreground">Avg Progress</div>
               </ManorCardContent>
             </ManorCard>
           </div>
