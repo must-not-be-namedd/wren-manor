@@ -22,10 +22,8 @@ const Puzzle6 = () => {
 
   const database = {
     TRANSACTIONS: [
-      { ID: '001', NAME: 'Charles', AMOUNT: 2000, DATE: '2025-08-25', TYPE: 'Salary' },
-      { ID: '002', NAME: 'Margaret', AMOUNT: 1800, DATE: '2025-08-25', TYPE: 'Salary' },
-      { ID: '003', NAME: 'Marcel', AMOUNT: 15000, DATE: '2025-08-30', TYPE: 'Bonus' },
-      { ID: '004', NAME: 'Victoria', AMOUNT: 500, DATE: '2025-09-01', TYPE: 'Donation' }
+      { ID: '01', NAME: 'Chef', AMOUNT: 12000, DATE: '2025-09-01' },
+      { ID: '02', NAME: 'Maid', AMOUNT: 5000, DATE: '2025-09-01' }
     ]
   };
 
@@ -50,7 +48,7 @@ const Puzzle6 = () => {
         
         toast({
           title: "Motive Discovered!",
-          description: "Marcel received a suspicious £15,000 bonus payment!",
+          description: "Chef received a suspicious £12,000 payment!",
           variant: "default",
         });
       }
@@ -150,7 +148,7 @@ const Puzzle6 = () => {
                   Motive Revealed!
                 </h3>
                 <p className="text-primary-foreground/90 mb-6">
-                  Marcel received £15,000 just before the murder. Someone was paying him well!
+                  Chef received £12,000 just before the murder. Someone was paying him well!
                 </p>
                 <ManorButton 
                   onClick={handleNext}
