@@ -5,15 +5,19 @@ import { Layout } from '@/components/Layout';
 import { ManorCard, ManorCardContent, ManorCardDescription, ManorCardHeader, ManorCardTitle } from '@/components/ui/manor-card';
 import { ManorButton } from '@/components/ui/manor-button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Clock, Users, Crown, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Trophy, Medal, Clock, Users, Crown, ArrowLeft, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { getLeaderboard, getGameProgress, type LeaderboardEntry, type GameProgress } from '@/lib/gameState';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Leaderboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [currentProgress, setCurrentProgress] = useState<GameProgress | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
 
   const loadLeaderboard = async () => {
     try {
@@ -27,8 +31,23 @@ const Leaderboard = () => {
 
   const loadCurrentProgress = async () => {
     try {
-      const progress = await getGameProgress('', '');
-      setCurrentProgress(progress);
+      // Get stored player data if available
+      const stored = localStorage.getItem('wren-manor-player');
+      let storedPlayerName = '';
+      let storedTeamId = '';
+      
+      if (stored) {
+        const playerData = JSON.parse(stored);
+        storedPlayerName = playerData.playerName || '';
+        storedTeamId = playerData.teamId || '';
+      }
+      
+      if (storedPlayerName && storedTeamId) {
+        const progress = await getGameProgress(storedPlayerName, storedTeamId);
+        setCurrentProgress(progress);
+      } else {
+        setCurrentProgress(null);
+      }
     } catch (error) {
       console.error('Error loading current progress:', error);
       setCurrentProgress(null);
@@ -42,6 +61,68 @@ const Leaderboard = () => {
       setIsLoading(false);
     };
     loadData();
+
+    // Set up real-time subscription for leaderboard updates
+    console.log('Setting up real-time subscription for leaderboard...');
+    const channel = supabase
+      .channel('leaderboard-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'leaderboard'
+        },
+        (payload) => {
+          console.log('Leaderboard real-time update received:', payload);
+          // Show toast notification for leaderboard updates
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: "🔥 New Investigator!",
+              description: "Another detective has joined the hunt at Wren Manor.",
+              duration: 3000,
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            toast({
+              title: "📈 Leaderboard Updated!",
+              description: "An investigator has made progress.",
+              duration: 2000,
+            });
+          }
+          // Refresh the leaderboard data when changes occur
+          loadLeaderboard();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events for game progress changes
+          schema: 'public',
+          table: 'game_progress'
+        },
+        (payload) => {
+          console.log('Game progress real-time update received:', payload);
+          // Refresh both leaderboard and current progress
+          loadLeaderboard();
+          loadCurrentProgress();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          setIsRealTimeConnected(true);
+          console.log('✅ Real-time leaderboard updates are now active!');
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          setIsRealTimeConnected(false);
+          console.log('❌ Real-time connection failed or disconnected');
+        }
+      });
+
+    // Cleanup subscription on component unmount
+    return () => {
+      console.log('Cleaning up real-time subscription...');
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const refreshLeaderboard = async () => {
@@ -135,14 +216,31 @@ const Leaderboard = () => {
             Back to Home
           </ManorButton>
 
-          <ManorButton
-            variant="outline"
-            onClick={refreshLeaderboard}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
-          </ManorButton>
+          <div className="flex items-center space-x-4">
+            {/* Real-time status indicator */}
+            <div className="flex items-center space-x-2 text-sm">
+              {isRealTimeConnected ? (
+                <>
+                  <Wifi className="h-4 w-4 text-green-500 animate-pulse" />
+                  <span className="text-green-500 font-medium">Live Updates</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-4 w-4 text-yellow-500" />
+                  <span className="text-yellow-500 font-medium">Connecting...</span>
+                </>
+              )}
+            </div>
+
+            <ManorButton
+              variant="outline"
+              onClick={refreshLeaderboard}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </ManorButton>
+          </div>
         </motion.div>
 
         {/* Statistics */}

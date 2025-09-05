@@ -180,8 +180,8 @@ const Home = () => {
           >
             The shadows of Wren Manor conceal a deadly secret. A murder has been committed, 
             and only the most cunning investigators can uncover the truth. Navigate through 
-            seven challenging puzzles to reveal the weapon, decode secret messages, 
-            and expose the killer in this immersive murder mystery experience.
+            nine challenging puzzles to reveal the weapon, decode secret messages, 
+            and expose the killer in this immersive murder mystery experience with real-time leaderboards.
           </motion.p>
         </motion.div>
 
@@ -307,7 +307,7 @@ const Home = () => {
             </ManorCardHeader>
             <ManorCardContent>
               <ManorCardDescription>
-                Compete with other investigators and track your team's progress in real-time.
+                Watch other investigators' progress update instantly as they solve puzzles. Real-time competition with live rankings and progress tracking.
               </ManorCardDescription>
             </ManorCardContent>
           </ManorCard>
