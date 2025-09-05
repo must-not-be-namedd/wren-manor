@@ -43,10 +43,10 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
                 <Crown className="h-4 w-4 text-accent absolute -top-1 -right-1" />
               </div>
               <div>
-                <h1 className="font-manor text-2xl font-bold text-foreground">
+                <h1 className="font-mystery text-2xl font-bold text-foreground">
                   Wren Manor
                 </h1>
-                <p className="text-sm text-muted-foreground font-body">
+                <p className="text-sm text-muted-foreground font-detective">
                   A Murder Mystery
                 </p>
               </div>
@@ -54,7 +54,7 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
 
             {showProgress && progress.playerName && (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-detective">
                   <Clock className="h-4 w-4" />
                   <span>Team: {progress.teamId}</span>
                 </div>
@@ -67,7 +67,7 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
                       <motion.button
                         key={item.label}
                         onClick={() => isAccessible && navigate(item.path)}
-                        className={`px-2 py-1 rounded-md text-xs font-medium transition-manor ${
+                        className={`px-2 py-1 rounded-md text-xs font-medium font-detective transition-manor ${
                           item.completed 
                             ? 'bg-primary/20 text-primary border border-primary/30' 
                             : isAccessible 
@@ -82,7 +82,7 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
                   })}
                 </div>
                 <div className="md:hidden lg:hidden flex items-center">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground font-detective">
                     Progress: {progressItems.filter(p => p.completed).length}/{progressItems.length}
                   </span>
                 </div>
