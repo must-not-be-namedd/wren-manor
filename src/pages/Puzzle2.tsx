@@ -18,19 +18,33 @@ interface Event {
 const Puzzle2 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Redirect if not authorized or previous puzzle incomplete
+  // Load game progress
   useEffect(() => {
-    if (!progress.playerName || !progress.teamId) {
-      navigate('/');
-      return;
-    }
-    if (!progress.p1) {
-      navigate('/puzzle1');
-      return;
-    }
-  }, [progress, navigate]);
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      
+      // Check if previous puzzle is incomplete
+      if (!gameProgress.p1) {
+        navigate('/puzzle1');
+        return;
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
   const correctEvents: Event[] = [
     { id: 1, text: "Lady Wren hosts the evening gathering", time: "" },
@@ -107,7 +121,7 @@ const Puzzle2 = () => {
     setTimelineEvents([]);
   };
 
-  const checkSolution = () => {
+  const checkSolution = async () => {
     if (timelineEvents.length !== correctEvents.length) {
       toast({
         title: "Incomplete Timeline",
@@ -119,7 +133,7 @@ const Puzzle2 = () => {
 
     setIsChecking(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const isCorrect = timelineEvents.every((event, index) => 
         event.id === correctEvents[index].id
       );
@@ -131,7 +145,7 @@ const Puzzle2 = () => {
           currentPage: 2,
         };
         
-        saveGameProgress(newProgress);
+        await saveGameProgress(newProgress);
         
         toast({
           title: "Timeline Reconstructed!",
@@ -156,7 +170,7 @@ const Puzzle2 = () => {
     navigate('/puzzle3');
   };
 
-  if (!progress.playerName || !progress.teamId || !progress.p1) {
+  if (loading || !progress) {
     return null;
   }
 

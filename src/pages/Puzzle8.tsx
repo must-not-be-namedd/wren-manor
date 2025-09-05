@@ -12,7 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 const Puzzle8 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   
   const [foundClues, setFoundClues] = useState<string[]>([]);
   const [puzzleSolved, setPuzzleSolved] = useState(false);
@@ -40,10 +41,27 @@ const Puzzle8 = () => {
   ];
 
   useEffect(() => {
-    if (!progress.p7) {
-      navigate('/');
-      return;
-    }
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      
+      // Check if previous puzzle is incomplete
+      if (!gameProgress.p7) {
+        navigate('/');
+        return;
+      }
+    };
+    
+    loadProgress();
 
     // Add hidden clues to the page
     const addHiddenElements = () => {
@@ -71,9 +89,9 @@ const Puzzle8 = () => {
         invisibleEl.remove();
       }
     };
-  }, [progress, navigate]);
+  }, [navigate]);
 
-  const handleClueFound = (clueId: string) => {
+  const handleClueFound = async (clueId: string) => {
     if (!foundClues.includes(clueId)) {
       const newFoundClues = [...foundClues, clueId];
       setFoundClues(newFoundClues);
@@ -86,7 +104,7 @@ const Puzzle8 = () => {
 
       if (newFoundClues.length >= 2) {
         const newProgress = { ...progress, p8: true };
-        saveGameProgress(newProgress);
+        await saveGameProgress(newProgress);
         setPuzzleSolved(true);
         
         toast({
@@ -101,6 +119,10 @@ const Puzzle8 = () => {
   const handleNext = () => {
     navigate('/puzzle9');
   };
+
+  if (loading || !progress) {
+    return null;
+  }
 
   return (
     <Layout>

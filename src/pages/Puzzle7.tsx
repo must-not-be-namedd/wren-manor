@@ -14,7 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 const Puzzle7 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   
   const [cipherAnswer, setCipherAnswer] = useState('');
   const [collectedClues, setCollectedClues] = useState('');
@@ -24,12 +25,30 @@ const Puzzle7 = () => {
   const encryptedMessage = 'SFDPMMFDU BMM UIF DMVFT';
   const correctDecryption = 'RECOLLECT ALL THE CLUES';
 
+  // Load game progress
   useEffect(() => {
-    if (!progress.p6) {
-      navigate('/');
-      return;
-    }
-  }, [progress, navigate]);
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      
+      // Check if previous puzzle is incomplete
+      if (!gameProgress.p6) {
+        navigate('/');
+        return;
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
   const handleCipherSubmit = () => {
     if (cipherAnswer.trim().toUpperCase() === correctDecryption) {
@@ -48,14 +67,14 @@ const Puzzle7 = () => {
     }
   };
 
-  const handleCluesSubmit = () => {
+  const handleCluesSubmit = async () => {
     const userClues = collectedClues.toUpperCase();
     const expectedClues = ['DAGGER', 'MARCEL', 'CHEF', 'BONUS'];
     const matchCount = expectedClues.filter(clue => userClues.includes(clue)).length;
     
     if (matchCount >= 3) {
       const newProgress = { ...progress, p7: true };
-      saveGameProgress(newProgress);
+      await saveGameProgress(newProgress);
       setPuzzleSolved(true);
       
       toast({
@@ -75,6 +94,10 @@ const Puzzle7 = () => {
   const handleNext = () => {
     navigate('/puzzle8');
   };
+
+  if (loading || !progress) {
+    return null;
+  }
 
   return (
     <Layout>

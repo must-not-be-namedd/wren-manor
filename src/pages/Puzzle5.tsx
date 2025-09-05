@@ -12,7 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 const Puzzle5 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   
   const [selectedContradictions, setSelectedContradictions] = useState<string[]>([]);
   const [puzzleSolved, setPuzzleSolved] = useState(false);
@@ -46,12 +47,30 @@ const Puzzle5 = () => {
 
   const correctContradictions = ['butler-time|maid-sight', 'chef-kitchen|guest-chef'];
 
+  // Load game progress
   useEffect(() => {
-    if (!progress.p4) {
-      navigate('/');
-      return;
-    }
-  }, [progress, navigate]);
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      
+      // Check if previous puzzle is incomplete
+      if (!gameProgress.p4) {
+        navigate('/');
+        return;
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
   const handleContradictionToggle = (contradiction: string) => {
     setSelectedContradictions(prev => {
@@ -63,12 +82,12 @@ const Puzzle5 = () => {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const found = selectedContradictions.filter(c => correctContradictions.includes(c));
     
     if (found.length >= 2) {
       const newProgress = { ...progress, p5: true };
-      saveGameProgress(newProgress);
+      await saveGameProgress(newProgress);
       setPuzzleSolved(true);
       
       toast({
@@ -88,6 +107,10 @@ const Puzzle5 = () => {
   const handleNext = () => {
     navigate('/puzzle6');
   };
+
+  if (loading || !progress) {
+    return null;
+  }
 
   return (
     <Layout>

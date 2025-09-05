@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
@@ -10,20 +10,33 @@ import { getGameProgress, resetGameProgress } from '@/lib/gameState';
 
 const Results = () => {
   const navigate = useNavigate();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Redirect if not authorized or no progress
+  // Load game progress
   useEffect(() => {
-    if (!progress.playerName || !progress.teamId) {
-      navigate('/');
-      return;
-    }
-    // Allow viewing results if at least puzzle 1 is completed
-    if (!progress.p1) {
-      navigate('/');
-      return;
-    }
-  }, [progress, navigate]);
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      
+      // Allow viewing results if at least puzzle 1 is completed
+      if (!gameProgress.p1) {
+        navigate('/');
+        return;
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
   const formatTime = (milliseconds: number) => {
     const minutes = Math.floor(milliseconds / 60000);
@@ -31,8 +44,12 @@ const Results = () => {
     return `${minutes}m ${seconds}s`;
   };
 
-  const handlePlayAgain = () => {
-    resetGameProgress();
+  const handlePlayAgain = async () => {
+    if (progress?.playerName && progress?.teamId) {
+      await resetGameProgress(progress.playerName, progress.teamId);
+    }
+    localStorage.removeItem('playerName');
+    localStorage.removeItem('teamId');
     navigate('/');
   };
 
@@ -40,7 +57,7 @@ const Results = () => {
     navigate('/leaderboard');
   };
 
-  if (!progress.playerName || !progress.teamId || !progress.p1) {
+  if (loading || !progress) {
     return null;
   }
 

@@ -29,19 +29,33 @@ interface TimeSlot {
 const Puzzle3 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Redirect if not authorized or previous puzzles incomplete
+  // Load game progress
   useEffect(() => {
-    if (!progress.playerName || !progress.teamId) {
-      navigate('/');
-      return;
-    }
-    if (!progress.p1 || !progress.p2) {
-      navigate(progress.p1 ? '/puzzle2' : '/puzzle1');
-      return;
-    }
-  }, [progress, navigate]);
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      
+      // Check if previous puzzles are incomplete
+      if (!gameProgress.p1 || !gameProgress.p2) {
+        navigate(gameProgress.p1 ? '/puzzle2' : '/puzzle1');
+        return;
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
   const suspectRiddles: SuspectRiddle[] = [
     { 
@@ -204,7 +218,7 @@ const Puzzle3 = () => {
     setShowingRiddles(new Set());
   };
 
-  const checkSolution = () => {
+  const checkSolution = async () => {
     // Check if all required suspects are revealed
     const requiredSuspects = ['maid', 'butler', 'chef'];
     const allRevealed = requiredSuspects.every(id => revealedSuspects.has(id));
@@ -220,7 +234,7 @@ const Puzzle3 = () => {
 
     setIsChecking(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       // Check if the correct suspects are in the correct time slots
       const isCorrect = Object.entries(correctPlacements).every(([suspectId, time]) => {
         const slot = timeSlots.find(slot => slot.time === time);
@@ -235,7 +249,7 @@ const Puzzle3 = () => {
           completionTime: Date.now() - progress.startTime
         };
         
-        saveGameProgress(newProgress);
+        await saveGameProgress(newProgress);
         setClearedSuspects(['maid', 'butler']);
         
         toast({
@@ -261,7 +275,7 @@ const Puzzle3 = () => {
     navigate('/puzzle4');
   };
 
-  if (!progress.playerName || !progress.teamId || !progress.p1 || !progress.p2) {
+  if (loading || !progress) {
     return null;
   }
 

@@ -11,11 +11,38 @@ import { Badge } from '@/components/ui/badge';
 
 const Puzzle4 = () => {
   const navigate = useNavigate();
-  const [progress, setProgress] = useState(getGameProgress());
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedKiller, setSelectedKiller] = useState<string>("");
   const [selectedWeapon, setSelectedWeapon] = useState<string>("");
   const [showHints, setShowHints] = useState(false);
-  const [solved, setSolved] = useState(progress.p4);
+  const [solved, setSolved] = useState(false);
+
+  // Load game progress
+  useEffect(() => {
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      setSolved(gameProgress.p4);
+      
+      // Check if previous puzzles are incomplete
+      if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3) {
+        navigate('/');
+        return;
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
   const suspects = ["Eleanor (Maid)", "Reginald (Butler)", "Marcel (Chef)", "Victoria (Guest)", "Harrison (Guest)"];
   const weapons = ["Dagger", "Rope", "Candlestick", "Poison", "Blunt Object"];
@@ -35,15 +62,7 @@ const Puzzle4 = () => {
     "Connect the clues logically - if A then B, if B then C..."
   ];
 
-  useEffect(() => {
-    // Check if previous puzzles are completed
-    if (!progress.p1 || !progress.p2 || !progress.p3) {
-      navigate("/");
-      return;
-    }
-  }, [progress, navigate]);
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Correct answer: Marcel (Chef) with Dagger
     if (selectedKiller === "Marcel (Chef)" && selectedWeapon === "Dagger") {
       const newProgress = {
@@ -54,7 +73,7 @@ const Puzzle4 = () => {
       };
       
       setProgress(newProgress);
-      saveGameProgress(newProgress);
+      await saveGameProgress(newProgress);
       setSolved(true);
       
       toast({
@@ -74,6 +93,10 @@ const Puzzle4 = () => {
   const handleNext = () => {
     navigate("/puzzle5");
   };
+
+  if (loading || !progress) {
+    return null;
+  }
 
   return (
     <Layout>

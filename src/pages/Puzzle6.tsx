@@ -14,7 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 const Puzzle6 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   
   const [query, setQuery] = useState('');
   const [queryResults, setQueryResults] = useState<any[]>([]);
@@ -27,14 +28,32 @@ const Puzzle6 = () => {
     ]
   };
 
+  // Load game progress
   useEffect(() => {
-    if (!progress.p5) {
-      navigate('/');
-      return;
-    }
-  }, [progress, navigate]);
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      
+      // Check if previous puzzle is incomplete
+      if (!gameProgress.p5) {
+        navigate('/');
+        return;
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
-  const executeQuery = () => {
+  const executeQuery = async () => {
     const normalizedQuery = query.trim().toUpperCase();
     let results: any[] = [];
     
@@ -43,7 +62,7 @@ const Puzzle6 = () => {
       
       if (results.length > 0 && !puzzleSolved) {
         const newProgress = { ...progress, p6: true };
-        saveGameProgress(newProgress);
+        await saveGameProgress(newProgress);
         setPuzzleSolved(true);
         
         toast({
@@ -60,6 +79,10 @@ const Puzzle6 = () => {
   const handleNext = () => {
     navigate('/puzzle7');
   };
+
+  if (loading || !progress) {
+    return null;
+  }
 
   return (
     <Layout>

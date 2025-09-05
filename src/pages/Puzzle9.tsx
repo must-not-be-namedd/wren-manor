@@ -14,7 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 const Puzzle9 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   
   const [finalCode, setFinalCode] = useState('');
   const [accusation, setAccusation] = useState('');
@@ -26,12 +27,30 @@ const Puzzle9 = () => {
   const correctDecryption = 'MARCEL WITH THE DAGGER IN THE WINE CELLAR';
   const correctAccusation = 'MARCEL WITH THE DAGGER IN THE WINE CELLAR';
 
+  // Load game progress
   useEffect(() => {
-    if (!progress.p8) {
-      navigate('/');
-      return;
-    }
-  }, [progress, navigate]);
+    const loadProgress = async () => {
+      const playerName = localStorage.getItem('playerName');
+      const teamId = localStorage.getItem('teamId');
+      
+      if (!playerName || !teamId) {
+        navigate('/');
+        return;
+      }
+      
+      const gameProgress = await getGameProgress(playerName, teamId);
+      setProgress(gameProgress);
+      setLoading(false);
+      
+      // Check if previous puzzle is incomplete
+      if (!gameProgress.p8) {
+        navigate('/');
+        return;
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
   const caesarCipherDecode = (text: string, shift: number): string => {
     return text.replace(/[A-Z]/g, (char) => {
@@ -60,7 +79,7 @@ const Puzzle9 = () => {
     }
   };
 
-  const handleFinalAccusation = () => {
+  const handleFinalAccusation = async () => {
     const userAccusation = accusation.trim().toUpperCase();
     
     if (userAccusation === correctAccusation) {
@@ -70,7 +89,7 @@ const Puzzle9 = () => {
         completionTime: Date.now() - progress.startTime,
         killer: 'MARCEL'
       };
-      saveGameProgress(newProgress);
+      await saveGameProgress(newProgress);
       setPuzzleSolved(true);
       setShowVictoryAnimation(true);
       
@@ -92,6 +111,10 @@ const Puzzle9 = () => {
       });
     }
   };
+
+  if (loading || !progress) {
+    return null;
+  }
 
   return (
     <Layout>
