@@ -37,16 +37,33 @@ const Puzzle1 = () => {
           teamId = playerData.teamId || '';
         }
         
+        // Only redirect to home if we definitely have no player data
+        // Give it a chance to load from URL params or other sources
         if (!playerName || !teamId) {
-          navigate('/');
+          console.log('No player data found in localStorage, redirecting to home after delay...');
+          // Add a delay to allow for any async loading
+          setTimeout(() => {
+            navigate('/');
+          }, 1000);
           return;
         }
         
+        console.log(`Loading progress for ${playerName} (Team: ${teamId})`);
         const gameProgress = await getGameProgress(playerName, teamId);
         setProgress(gameProgress);
+        
+        // If we have progress but somehow ended up on wrong puzzle, redirect appropriately
+        if (gameProgress && gameProgress.p1 && gameProgress.currentPage > 0) {
+          console.log('Player already completed puzzle 1, redirecting to next puzzle...');
+          navigate('/puzzle2');
+          return;
+        }
       } catch (error) {
         console.error('Error loading progress:', error);
-        navigate('/');
+        // Don't immediately redirect on error - give user a chance to retry
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
       } finally {
         setIsLoading(false);
       }
@@ -68,13 +85,21 @@ const Puzzle1 = () => {
       return;
     }
 
-    if (!progress) return;
+    if (!progress) {
+      toast({
+        title: "Error",
+        description: "Game progress not loaded. Please refresh the page.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsChecking(true);
 
     setTimeout(async () => {
       if (answer.toUpperCase() === correctAnswer) {
         try {
+          console.log('Correct answer! Saving progress and proceeding to next puzzle...');
           const newProgress: GameProgress = {
             ...progress,
             p1: true,
@@ -82,14 +107,24 @@ const Puzzle1 = () => {
             currentPage: 1,
           };
           
+          console.log('Saving new progress:', newProgress);
           await saveGameProgress(newProgress);
           setProgress(newProgress);
           
           toast({
-            title: "Weapon Identified: Dagger",
-            description: "The murder weapon has been revealed! Proceed to reconstruct the timeline.",
+            title: "🗡️ Weapon Identified: Dagger",
+            description: "The murder weapon has been revealed! Proceeding to timeline reconstruction...",
+            duration: 3000,
           });
           
+          // Ensure localStorage is updated before navigation
+          const playerData = {
+            playerName: newProgress.playerName,
+            teamId: newProgress.teamId
+          };
+          localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
+          
+          console.log('Navigating to puzzle 2 in 2 seconds...');
           setTimeout(() => {
             navigate('/puzzle2');
           }, 2000);
@@ -104,7 +139,7 @@ const Puzzle1 = () => {
       } else {
         toast({
           title: "Incorrect Answer",
-          description: "The letters don't form the correct weapon. Try again.",
+          description: `"${answer}" is not correct. The letters spell a different weapon. Try again!`,
           variant: "destructive",
         });
       }
