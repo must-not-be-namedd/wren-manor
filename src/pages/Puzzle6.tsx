@@ -31,22 +31,47 @@ const Puzzle6 = () => {
   // Load game progress
   useEffect(() => {
     const loadProgress = async () => {
-      const playerName = localStorage.getItem('playerName');
-      const teamId = localStorage.getItem('teamId');
-      
-      if (!playerName || !teamId) {
+      try {
+        setLoading(true);
+        // Get player data from localStorage
+        const stored = localStorage.getItem('wren-manor-player');
+        let playerName = '';
+        let teamId = '';
+        
+        if (stored) {
+          const playerData = JSON.parse(stored);
+          playerName = playerData.playerName || '';
+          teamId = playerData.teamId || '';
+        }
+        
+        if (!playerName || !teamId) {
+          console.log('No player data found, redirecting to home...');
+          navigate('/');
+          return;
+        }
+        
+        console.log(`Loading progress for ${playerName} (Team: ${teamId})`);
+        const gameProgress = await getGameProgress(playerName, teamId);
+        setProgress(gameProgress);
+        
+        // Check if previous puzzles are incomplete
+        if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3 || !gameProgress.p4 || !gameProgress.p5) {
+          console.log('Previous puzzles incomplete, redirecting...');
+          navigate('/');
+          return;
+        }
+
+        // If puzzle already completed, redirect to next
+        if (gameProgress.p6 && gameProgress.currentPage > 5) {
+          console.log('Puzzle 6 already completed, redirecting to next puzzle...');
+          navigate('/puzzle7');
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading progress:', error);
         navigate('/');
-        return;
-      }
-      
-      const gameProgress = await getGameProgress(playerName, teamId);
-      setProgress(gameProgress);
-      setLoading(false);
-      
-      // Check if previous puzzle is incomplete
-      if (!gameProgress.p5) {
-        navigate('/');
-        return;
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -61,15 +86,27 @@ const Puzzle6 = () => {
       results = database.TRANSACTIONS.filter(row => row.AMOUNT > 10000);
       
       if (results.length > 0 && !puzzleSolved) {
-        const newProgress = { ...progress, p6: true };
+        const newProgress = { ...progress, p6: true, currentPage: 6 };
         await saveGameProgress(newProgress);
+        setProgress(newProgress);
         setPuzzleSolved(true);
         
         toast({
-          title: "Motive Discovered!",
-          description: "Chef received a suspicious £12,000 payment!",
-          variant: "default",
+          title: "💰 Evidence Discovered!",
+          description: "The financial records reveal the motive! Proceeding to final cipher...",
+          duration: 3000,
         });
+
+        // Ensure localStorage is updated before navigation
+        const playerData = {
+          playerName: newProgress.playerName,
+          teamId: newProgress.teamId
+        };
+        localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
+
+        setTimeout(() => {
+          navigate('/puzzle7');
+        }, 2000);
       }
     }
     

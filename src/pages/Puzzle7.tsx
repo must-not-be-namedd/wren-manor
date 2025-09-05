@@ -28,22 +28,47 @@ const Puzzle7 = () => {
   // Load game progress
   useEffect(() => {
     const loadProgress = async () => {
-      const playerName = localStorage.getItem('playerName');
-      const teamId = localStorage.getItem('teamId');
-      
-      if (!playerName || !teamId) {
+      try {
+        setLoading(true);
+        // Get player data from localStorage
+        const stored = localStorage.getItem('wren-manor-player');
+        let playerName = '';
+        let teamId = '';
+        
+        if (stored) {
+          const playerData = JSON.parse(stored);
+          playerName = playerData.playerName || '';
+          teamId = playerData.teamId || '';
+        }
+        
+        if (!playerName || !teamId) {
+          console.log('No player data found, redirecting to home...');
+          navigate('/');
+          return;
+        }
+        
+        console.log(`Loading progress for ${playerName} (Team: ${teamId})`);
+        const gameProgress = await getGameProgress(playerName, teamId);
+        setProgress(gameProgress);
+        
+        // Check if previous puzzles are incomplete
+        if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3 || !gameProgress.p4 || !gameProgress.p5 || !gameProgress.p6) {
+          console.log('Previous puzzles incomplete, redirecting...');
+          navigate('/');
+          return;
+        }
+
+        // If puzzle already completed, redirect to next
+        if (gameProgress.p7 && gameProgress.currentPage > 6) {
+          console.log('Puzzle 7 already completed, redirecting to next puzzle...');
+          navigate('/puzzle8');
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading progress:', error);
         navigate('/');
-        return;
-      }
-      
-      const gameProgress = await getGameProgress(playerName, teamId);
-      setProgress(gameProgress);
-      setLoading(false);
-      
-      // Check if previous puzzle is incomplete
-      if (!gameProgress.p6) {
-        navigate('/');
-        return;
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -73,15 +98,27 @@ const Puzzle7 = () => {
     const matchCount = expectedClues.filter(clue => userClues.includes(clue)).length;
     
     if (matchCount >= 3) {
-      const newProgress = { ...progress, p7: true };
+      const newProgress = { ...progress, p7: true, currentPage: 7 };
       await saveGameProgress(newProgress);
+      setProgress(newProgress);
       setPuzzleSolved(true);
       
       toast({
-        title: "Pattern Complete!",
-        description: "All evidence points to Marcel the Chef!",
-        variant: "default",
+        title: "🔓 Cipher Decoded!",
+        description: "The final clues have been collected! Proceeding to the grand finale...",
+        duration: 3000,
       });
+
+      // Ensure localStorage is updated before navigation
+      const playerData = {
+        playerName: newProgress.playerName,
+        teamId: newProgress.teamId
+      };
+      localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
+
+      setTimeout(() => {
+        navigate('/puzzle8');
+      }, 2000);
     } else {
       toast({
         title: "Incomplete Evidence",

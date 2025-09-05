@@ -35,22 +35,47 @@ const Puzzle3 = () => {
   // Load game progress
   useEffect(() => {
     const loadProgress = async () => {
-      const playerName = localStorage.getItem('playerName');
-      const teamId = localStorage.getItem('teamId');
-      
-      if (!playerName || !teamId) {
+      try {
+        setLoading(true);
+        // Get player data from localStorage
+        const stored = localStorage.getItem('wren-manor-player');
+        let playerName = '';
+        let teamId = '';
+        
+        if (stored) {
+          const playerData = JSON.parse(stored);
+          playerName = playerData.playerName || '';
+          teamId = playerData.teamId || '';
+        }
+        
+        if (!playerName || !teamId) {
+          console.log('No player data found, redirecting to home...');
+          navigate('/');
+          return;
+        }
+        
+        console.log(`Loading progress for ${playerName} (Team: ${teamId})`);
+        const gameProgress = await getGameProgress(playerName, teamId);
+        setProgress(gameProgress);
+        
+        // Check if previous puzzles are incomplete
+        if (!gameProgress.p1 || !gameProgress.p2) {
+          console.log('Previous puzzles incomplete, redirecting...');
+          navigate(gameProgress.p1 ? '/puzzle2' : '/puzzle1');
+          return;
+        }
+
+        // If puzzle already completed, redirect to next
+        if (gameProgress.p3 && gameProgress.currentPage > 2) {
+          console.log('Puzzle 3 already completed, redirecting to next puzzle...');
+          navigate('/puzzle4');
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading progress:', error);
         navigate('/');
-        return;
-      }
-      
-      const gameProgress = await getGameProgress(playerName, teamId);
-      setProgress(gameProgress);
-      setLoading(false);
-      
-      // Check if previous puzzles are incomplete
-      if (!gameProgress.p1 || !gameProgress.p2) {
-        navigate(gameProgress.p1 ? '/puzzle2' : '/puzzle1');
-        return;
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -250,16 +275,25 @@ const Puzzle3 = () => {
         };
         
         await saveGameProgress(newProgress);
+        setProgress(newProgress);
         setClearedSuspects(['maid', 'butler']);
         
         toast({
-          title: "Alibis Verified!",
-          description: "Eleanor and Reginald have been cleared. The remaining suspects await investigation.",
+          title: "✅ Alibis Verified!",
+          description: "Eleanor and Reginald have been cleared. Proceeding to deduction phase...",
+          duration: 3000,
         });
+
+        // Ensure localStorage is updated before navigation
+        const playerData = {
+          playerName: newProgress.playerName,
+          teamId: newProgress.teamId
+        };
+        localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
 
         setTimeout(() => {
           navigate('/puzzle4');
-        }, 3000);
+        }, 2000);
       } else {
         toast({
           title: "Incorrect Placement",

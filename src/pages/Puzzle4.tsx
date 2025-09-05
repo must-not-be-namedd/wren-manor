@@ -21,23 +21,50 @@ const Puzzle4 = () => {
   // Load game progress
   useEffect(() => {
     const loadProgress = async () => {
-      const playerName = localStorage.getItem('playerName');
-      const teamId = localStorage.getItem('teamId');
-      
-      if (!playerName || !teamId) {
+      try {
+        setLoading(true);
+        // Get player data from localStorage
+        const stored = localStorage.getItem('wren-manor-player');
+        let playerName = '';
+        let teamId = '';
+        
+        if (stored) {
+          const playerData = JSON.parse(stored);
+          playerName = playerData.playerName || '';
+          teamId = playerData.teamId || '';
+        }
+        
+        if (!playerName || !teamId) {
+          console.log('No player data found, redirecting to home...');
+          navigate('/');
+          return;
+        }
+        
+        console.log(`Loading progress for ${playerName} (Team: ${teamId})`);
+        const gameProgress = await getGameProgress(playerName, teamId);
+        setProgress(gameProgress);
+        setSolved(gameProgress.p4);
+        
+        // Check if previous puzzles are incomplete
+        if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3) {
+          console.log('Previous puzzles incomplete, redirecting...');
+          if (!gameProgress.p1) navigate('/puzzle1');
+          else if (!gameProgress.p2) navigate('/puzzle2');
+          else navigate('/puzzle3');
+          return;
+        }
+
+        // If puzzle already completed, redirect to next
+        if (gameProgress.p4 && gameProgress.currentPage > 3) {
+          console.log('Puzzle 4 already completed, redirecting to next puzzle...');
+          navigate('/puzzle5');
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading progress:', error);
         navigate('/');
-        return;
-      }
-      
-      const gameProgress = await getGameProgress(playerName, teamId);
-      setProgress(gameProgress);
-      setLoading(false);
-      setSolved(gameProgress.p4);
-      
-      // Check if previous puzzles are incomplete
-      if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3) {
-        navigate('/');
-        return;
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -77,10 +104,21 @@ const Puzzle4 = () => {
       setSolved(true);
       
       toast({
-        title: "Logic Solved!",
-        description: "Marcel the Chef used the dagger. His kitchen access and the evidence align perfectly.",
-        variant: "default"
+        title: "🔍 Deduction Complete!",
+        description: "Marcel the Chef used the dagger! Proceeding to contradiction analysis...",
+        duration: 3000,
       });
+
+      // Ensure localStorage is updated before navigation
+      const playerData = {
+        playerName: newProgress.playerName,
+        teamId: newProgress.teamId
+      };
+      localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
+
+      setTimeout(() => {
+        navigate('/puzzle5');
+      }, 2000);
     } else {
       toast({
         title: "Incorrect Deduction",
