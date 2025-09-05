@@ -6,6 +6,7 @@ import { ManorCard, ManorCardContent, ManorCardHeader, ManorCardTitle } from '@/
 import { ManorButton } from '@/components/ui/manor-button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { Puzzle, Key, CheckCircle } from 'lucide-react';
 import { getGameProgress, saveGameProgress } from '@/lib/gameState';
 import { useToast } from '@/hooks/use-toast';
@@ -84,7 +85,13 @@ const Puzzle7 = () => {
         transition={{ duration: 0.6 }}
       >
         <div className="text-center space-y-4">
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+            Puzzle 7 of 9
+          </Badge>
           <h1 className="font-manor text-4xl font-bold text-foreground">Pattern Decryption</h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto font-detective">
+            Decrypt the final cipher and combine all clues to reveal the complete truth.
+          </p>
         </div>
 
         <ManorCard>

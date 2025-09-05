@@ -70,13 +70,16 @@ const Puzzle6 = () => {
         transition={{ duration: 0.6 }}
       >
         <div className="text-center space-y-4">
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+            Puzzle 6 of 9
+          </Badge>
           <div className="flex justify-center items-center space-x-3 mb-6">
             <Database className="h-8 w-8 text-primary animate-pulse-blood" />
             <h1 className="font-manor text-4xl font-bold text-foreground">Query the Killer</h1>
             <Terminal className="h-8 w-8 text-accent animate-glow" />
           </div>
           
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-detective">
             Use SQL queries to search the manor's database and uncover evidence 
             that reveals the killer's motive.
           </p>

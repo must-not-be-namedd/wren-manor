@@ -92,7 +92,7 @@ const Puzzle1 = () => {
           transition={{ duration: 0.6 }}
         >
           <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-            Puzzle 1 of 3
+            Puzzle 1 of 9
           </Badge>
           <h1 className="font-manor text-4xl font-bold text-foreground">
             The Weapon Unveiled

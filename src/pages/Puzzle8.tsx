@@ -111,15 +111,18 @@ const Puzzle8 = () => {
         transition={{ duration: 0.6 }}
       >
         <div className="text-center space-y-4">
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+            Puzzle 8 of 9
+          </Badge>
           <div className="flex justify-center items-center space-x-3 mb-6">
             <Eye className="h-8 w-8 text-primary animate-pulse-blood" />
             <h1 className="font-manor text-4xl font-bold text-foreground">Inspect the Manor</h1>
             <Search className="h-8 w-8 text-accent animate-glow" />
           </div>
           
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            The final secrets are hidden in plain sight. Use your detective skills 
-            to find concealed clues on this very page.
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-detective">
+            Use browser inspector tools to find hidden clues embedded in this very page. 
+            The manor's secrets are closer than you think.
           </p>
         </div>
 

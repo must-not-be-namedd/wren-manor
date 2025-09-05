@@ -7,6 +7,7 @@ import { ManorButton } from "@/components/ui/manor-button";
 import { toast } from "@/hooks/use-toast";
 import { getGameProgress, saveGameProgress } from "@/lib/gameState";
 import { Brain, Target, CheckCircle2 } from "lucide-react";
+import { Badge } from '@/components/ui/badge';
 
 const Puzzle4 = () => {
   const navigate = useNavigate();
@@ -84,7 +85,10 @@ const Puzzle4 = () => {
           className="w-full max-w-4xl space-y-6"
         >
           {/* Header */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-2 mb-6">
+            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+              Puzzle 4 of 9
+            </Badge>
             <h1 className="text-4xl font-manor font-bold text-foreground">
               The Logic Chamber
             </h1>

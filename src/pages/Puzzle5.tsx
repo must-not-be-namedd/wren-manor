@@ -98,13 +98,16 @@ const Puzzle5 = () => {
         transition={{ duration: 0.6 }}
       >
         <div className="text-center space-y-4">
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+            Puzzle 5 of 9
+          </Badge>
           <div className="flex justify-center items-center space-x-3 mb-6">
             <MessageSquare className="h-8 w-8 text-primary animate-pulse-blood" />
             <h1 className="font-manor text-4xl font-bold text-foreground">Web of Lies</h1>
             <Search className="h-8 w-8 text-accent animate-glow" />
           </div>
           
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-body">
             The suspects' statements contradict each other. Identify the lies by finding 
             contradictory statements that cannot both be true.
           </p>

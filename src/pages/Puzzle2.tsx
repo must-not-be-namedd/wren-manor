@@ -171,7 +171,7 @@ const Puzzle2 = () => {
           transition={{ duration: 0.6 }}
         >
           <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-            Puzzle 2 of 3
+            Puzzle 2 of 9
           </Badge>
           <h1 className="font-manor text-4xl font-bold text-foreground">
             Reconstruct the Timeline
@@ -349,8 +349,8 @@ const Puzzle2 = () => {
           transition={{ delay: 0.8, duration: 0.6 }}
           className="text-center"
         >
-          <p className="text-sm text-muted-foreground max-w-md mx-auto font-body italic">
-            "Time reveals all secrets, but only to those who can read its silent testimony..."
+          <p className="text-sm text-muted-foreground max-w-md mx-auto font-detective italic">
+            "The shadows whisper secrets, but only the keen-eyed detective can hear their truths..."
           </p>
         </motion.div>
       </div>

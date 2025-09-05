@@ -102,13 +102,16 @@ const Puzzle9 = () => {
         transition={{ duration: 0.6 }}
       >
         <div className="text-center space-y-4">
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+            Final Puzzle 9 of 9
+          </Badge>
           <div className="flex justify-center items-center space-x-3 mb-6">
             <Gavel className="h-8 w-8 text-primary animate-pulse-blood" />
             <h1 className="font-manor text-4xl font-bold text-foreground">Final Judgment</h1>
             <Crown className="h-8 w-8 text-accent animate-glow" />
           </div>
           
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-detective">
             The investigation reaches its climax. Decode the final message and make your 
             formal accusation to expose the killer of Wren Manor.
           </p>
