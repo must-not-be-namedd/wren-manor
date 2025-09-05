@@ -76,7 +76,7 @@ const Results = () => {
             {allCompleted ? 'Case Closed' : 'Investigation In Progress'}
           </Badge>
           
-          <h1 className="font-manor text-5xl md:text-6xl font-bold text-foreground mb-4">
+          <h1 className="font-mystery text-5xl md:text-6xl font-bold text-foreground mb-4">
             {allCompleted ? 'Mystery Solved!' : 'Progress Report'}
           </h1>
           
@@ -101,7 +101,7 @@ const Results = () => {
         >
           <ManorCard className="border-primary/20 shadow-blood">
             <ManorCardHeader className="text-center">
-              <ManorCardTitle className="text-2xl flex items-center justify-center space-x-2">
+              <ManorCardTitle className="text-2xl flex items-center justify-center space-x-2 font-detective">
                 <Skull className="h-8 w-8 text-primary" />
                 <span>Investigation Summary</span>
               </ManorCardTitle>
@@ -113,7 +113,7 @@ const Results = () => {
             <ManorCardContent className="space-y-6">
               {/* Progress Overview */}
               <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg mb-6">
-                <h3 className="font-manor font-semibold text-foreground mb-2">Investigation Progress</h3>
+                <h3 className="font-detective font-semibold text-foreground mb-2">Investigation Progress</h3>
                 <div className="text-3xl font-bold text-primary">{completedPuzzles} / {totalPuzzles}</div>
                 <p className="text-sm text-muted-foreground">Puzzles Completed</p>
               </div>
@@ -122,21 +122,21 @@ const Results = () => {
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg">
                   <div className="text-2xl mb-2">🗡️</div>
-                  <h3 className="font-manor font-semibold text-foreground mb-1">Murder Weapon</h3>
+                  <h3 className="font-detective font-semibold text-foreground mb-1">Murder Weapon</h3>
                   <p className="text-primary font-bold">{progress.weapon || 'Unknown'}</p>
                   {progress.p1 && <Badge variant="outline" className="mt-2 text-green-500 border-green-500/30">✓ Identified</Badge>}
                 </div>
                 
                 <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg">
                   <div className="text-2xl mb-2">🧠</div>
-                  <h3 className="font-manor font-semibold text-foreground mb-1">Killer Identity</h3>
+                  <h3 className="font-detective font-semibold text-foreground mb-1">Killer Identity</h3>
                   <p className="text-primary font-bold">{progress.killer || 'Unknown'}</p>
                   {progress.p4 && <Badge variant="outline" className="mt-2 text-green-500 border-green-500/30">✓ Deduced</Badge>}
                 </div>
                 
                 <div className="text-center p-4 bg-primary/10 border border-primary/20 rounded-lg">
                   <div className="text-2xl mb-2">📋</div>
-                  <h3 className="font-manor font-semibold text-foreground mb-1">Case Status</h3>
+                  <h3 className="font-detective font-semibold text-foreground mb-1">Case Status</h3>
                   <p className="text-primary font-bold">{allCompleted ? 'Solved' : 'Ongoing'}</p>
                   {allCompleted && <Badge variant="outline" className="mt-2 text-green-500 border-green-500/30">✓ Complete</Badge>}
                 </div>
@@ -191,7 +191,7 @@ const Results = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 1.5, duration: 0.6 }}
                 >
-                  <h3 className="font-manor text-xl font-semibold text-foreground mb-3 text-center">
+                  <h3 className="font-detective text-xl font-semibold text-foreground mb-3 text-center">
                     🎯 Final Deduction 🎯
                   </h3>
                   <p className="text-muted-foreground leading-relaxed font-body text-center mb-4">
@@ -259,7 +259,7 @@ const Results = () => {
           <ManorCard className="max-w-md mx-auto bg-gradient-candlelight/10 border-accent/30">
             <ManorCardContent className="text-center p-8">
               <Trophy className="h-16 w-16 text-accent mx-auto mb-4 animate-glow" />
-              <h3 className="font-manor text-2xl font-bold text-foreground mb-2">
+              <h3 className="font-detective text-2xl font-bold text-foreground mb-2">
                 {allCompleted ? '🏆 Master Detective' : '🕵️ Detective in Training'}
               </h3>
               <p className="text-muted-foreground font-body">

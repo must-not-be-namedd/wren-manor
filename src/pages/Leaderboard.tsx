@@ -72,7 +72,7 @@ const Leaderboard = () => {
             <Trophy className="h-12 w-12 text-accent animate-glow" />
           </div>
           
-          <h1 className="font-manor text-4xl md:text-5xl font-bold text-foreground">
+          <h1 className="font-mystery text-4xl md:text-5xl font-bold text-foreground">
             Investigation Leaderboard
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto font-body">
@@ -154,7 +154,7 @@ const Leaderboard = () => {
         >
           <ManorCard className="border-primary/20">
             <ManorCardHeader>
-              <ManorCardTitle className="flex items-center space-x-2">
+              <ManorCardTitle className="flex items-center space-x-2 font-detective">
                 <Trophy className="h-6 w-6 text-primary" />
                 <span>Rankings</span>
               </ManorCardTitle>
@@ -213,7 +213,7 @@ const Leaderboard = () => {
                             
                             <div className="flex-1">
                               <div className="flex items-center space-x-2">
-                                <h3 className={`font-semibold ${isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
+                                <h3 className={`font-detective font-semibold ${isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
                                   {entry.playerName}
                                 </h3>
                                 {isCurrentUser && (
@@ -239,7 +239,7 @@ const Leaderboard = () => {
                                 )}
                               </div>
                               <div className="flex items-center space-x-3 mt-1">
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-sm text-muted-foreground font-detective">
                                   Team: {entry.teamId}
                                 </span>
                                 <Badge variant={progressBadge.variant} className={`text-xs ${progressBadge.color} flex items-center space-x-1`}>
@@ -309,7 +309,7 @@ const Leaderboard = () => {
           >
             <ManorCard className="bg-gradient-candlelight/5 border-accent/20">
               <ManorCardHeader className="text-center">
-                <ManorCardTitle className="flex items-center justify-center space-x-2 text-accent">
+                <ManorCardTitle className="flex items-center justify-center space-x-2 text-accent font-detective">
                   <Crown className="h-6 w-6 animate-glow" />
                   <span>Hall of Fame</span>
                   <Crown className="h-6 w-6 animate-glow" />
@@ -345,7 +345,7 @@ const Leaderboard = () => {
                       >
                         {index === 0 ? '👑' : index === 1 ? '🥈' : '🥉'}
                       </motion.div>
-                      <h4 className="font-manor font-bold text-foreground mb-1">
+                      <h4 className="font-detective font-bold text-foreground mb-1">
                         {entry.playerName}
                       </h4>
                       <div className="text-sm text-muted-foreground mb-2">
