@@ -1,6 +1,8 @@
 // Game State Management for Wren Manor Murder Mystery
+import { supabase } from "@/integrations/supabase/client";
 
 export interface GameProgress {
+  id?: string;
   p1: boolean; // Intro Puzzle (weapon identified)
   p2: boolean; // Order Drag & Drop (timeline reconstructed)  
   p3: boolean; // Timeline Drop (alibis placed)
@@ -20,6 +22,7 @@ export interface GameProgress {
 }
 
 export interface LeaderboardEntry {
+  id?: string;
   playerName: string;
   teamId: string;
   completionTime: number;
@@ -27,21 +30,55 @@ export interface LeaderboardEntry {
   timestamp: number;
 }
 
-const STORAGE_KEY = 'wren-manor-progress';
-const LEADERBOARD_KEY = 'wren-manor-leaderboard';
-
-export const getGameProgress = (): GameProgress => {
+export const getGameProgress = async (playerName: string, teamId: string): Promise<GameProgress> => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const progress = JSON.parse(stored);
-      console.log('Loaded game progress:', progress); // Debug log
+    if (!playerName || !teamId) {
+      return getDefaultProgress();
+    }
+
+    const { data, error } = await supabase
+      .from('game_progress')
+      .select('*')
+      .eq('player_name', playerName)
+      .eq('team_id', teamId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+      console.error('Error reading game progress:', error);
+      return getDefaultProgress();
+    }
+
+    if (data) {
+      const progress: GameProgress = {
+        id: data.id,
+        p1: data.p1,
+        p2: data.p2,
+        p3: data.p3,
+        p4: data.p4,
+        p5: data.p5,
+        p6: data.p6,
+        p7: data.p7,
+        p8: data.p8,
+        p9: data.p9,
+        weapon: data.weapon || '',
+        killer: data.killer || '',
+        currentPage: data.current_page,
+        startTime: data.start_time,
+        completionTime: data.completion_time || undefined,
+        playerName: data.player_name,
+        teamId: data.team_id
+      };
+      console.log('Loaded game progress from Supabase:', progress);
       return progress;
     }
   } catch (error) {
     console.error('Error reading game progress:', error);
   }
   
+  return getDefaultProgress();
+};
+
+const getDefaultProgress = (): GameProgress => {
   const defaultProgress = {
     p1: false,
     p2: false,
@@ -60,73 +97,117 @@ export const getGameProgress = (): GameProgress => {
     teamId: ''
   };
   
-  console.log('Using default progress:', defaultProgress); // Debug log
+  console.log('Using default progress:', defaultProgress);
   return defaultProgress;
 };
 
-export const saveGameProgress = (progress: GameProgress): void => {
+export const saveGameProgress = async (progress: GameProgress): Promise<void> => {
   try {
-    console.log('Saving game progress:', progress); // Debug log
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    console.log('Progress saved successfully'); // Debug log
-    updateLeaderboard(progress);
+    console.log('Saving game progress:', progress);
+    
+    const gameData = {
+      player_name: progress.playerName,
+      team_id: progress.teamId,
+      p1: progress.p1,
+      p2: progress.p2,
+      p3: progress.p3,
+      p4: progress.p4,
+      p5: progress.p5,
+      p6: progress.p6,
+      p7: progress.p7,
+      p8: progress.p8,
+      p9: progress.p9,
+      weapon: progress.weapon,
+      killer: progress.killer,
+      current_page: progress.currentPage,
+      start_time: progress.startTime,
+      completion_time: progress.completionTime
+    };
+
+    const { error } = await supabase
+      .from('game_progress')
+      .upsert(gameData, { 
+        onConflict: 'player_name,team_id'
+      });
+
+    if (error) {
+      console.error('Error saving game progress:', error);
+      return;
+    }
+    
+    console.log('Progress saved successfully');
+    await updateLeaderboard(progress);
   } catch (error) {
     console.error('Error saving game progress:', error);
   }
 };
 
-export const getLeaderboard = (): LeaderboardEntry[] => {
+export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
   try {
-    const stored = localStorage.getItem(LEADERBOARD_KEY);
-    if (stored) {
-      return JSON.parse(stored);
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('*')
+      .order('current_progress', { ascending: false })
+      .order('completion_time', { ascending: true });
+
+    if (error) {
+      console.error('Error reading leaderboard:', error);
+      return [];
     }
+
+    return data?.map(entry => ({
+      id: entry.id,
+      playerName: entry.player_name,
+      teamId: entry.team_id,
+      completionTime: entry.completion_time,
+      currentProgress: entry.current_progress,
+      timestamp: entry.timestamp
+    })) || [];
   } catch (error) {
     console.error('Error reading leaderboard:', error);
+    return [];
   }
-  return [];
 };
 
-const updateLeaderboard = (progress: GameProgress): void => {
+const updateLeaderboard = async (progress: GameProgress): Promise<void> => {
   try {
-    const leaderboard = getLeaderboard();
     const currentProgress = [progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7, progress.p8, progress.p9].filter(Boolean).length;
     
-    const existingEntryIndex = leaderboard.findIndex(
-      entry => entry.playerName === progress.playerName && entry.teamId === progress.teamId
-    );
-    
-    const newEntry: LeaderboardEntry = {
-      playerName: progress.playerName,
-      teamId: progress.teamId,
-      completionTime: progress.completionTime || 0,
-      currentProgress,
+    const leaderboardData = {
+      player_name: progress.playerName,
+      team_id: progress.teamId,
+      completion_time: progress.completionTime || 0,
+      current_progress: currentProgress,
       timestamp: Date.now()
     };
-    
-    if (existingEntryIndex >= 0) {
-      leaderboard[existingEntryIndex] = newEntry;
-    } else {
-      leaderboard.push(newEntry);
+
+    const { error } = await supabase
+      .from('leaderboard')
+      .upsert(leaderboardData, { 
+        onConflict: 'player_name,team_id'
+      });
+
+    if (error) {
+      console.error('Error updating leaderboard:', error);
     }
-    
-    // Sort by progress (desc), then by completion time (asc)
-    leaderboard.sort((a, b) => {
-      if (a.currentProgress !== b.currentProgress) {
-        return b.currentProgress - a.currentProgress;
-      }
-      return a.completionTime - b.completionTime;
-    });
-    
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
   } catch (error) {
     console.error('Error updating leaderboard:', error);
   }
 };
 
-export const resetGameProgress = (): void => {
+export const resetGameProgress = async (playerName: string, teamId: string): Promise<void> => {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    if (!playerName || !teamId) return;
+    
+    const { error } = await supabase
+      .from('game_progress')
+      .delete()
+      .eq('player_name', playerName)
+      .eq('team_id', teamId);
+
+    if (error) {
+      console.error('Error resetting game progress:', error);
+    }
   } catch (error) {
     console.error('Error resetting game progress:', error);
   }

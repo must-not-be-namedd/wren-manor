@@ -6,29 +6,55 @@ import { ManorCard, ManorCardContent, ManorCardDescription, ManorCardHeader, Man
 import { ManorButton } from '@/components/ui/manor-button';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Clock, Users, Crown, ArrowLeft, RefreshCw } from 'lucide-react';
-import { getLeaderboard, getGameProgress, type LeaderboardEntry } from '@/lib/gameState';
+import { getLeaderboard, getGameProgress, type LeaderboardEntry, type GameProgress } from '@/lib/gameState';
 
 const Leaderboard = () => {
   const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [currentProgress, setCurrentProgress] = useState<GameProgress | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const currentProgress = getGameProgress();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadLeaderboard = () => {
-    const data = getLeaderboard();
-    setLeaderboard(data);
+  const loadLeaderboard = async () => {
+    try {
+      const data = await getLeaderboard();
+      setLeaderboard(data);
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+      setLeaderboard([]);
+    }
+  };
+
+  const loadCurrentProgress = async () => {
+    try {
+      const progress = await getGameProgress('', '');
+      setCurrentProgress(progress);
+    } catch (error) {
+      console.error('Error loading current progress:', error);
+      setCurrentProgress(null);
+    }
   };
 
   useEffect(() => {
-    loadLeaderboard();
+    const loadData = async () => {
+      setIsLoading(true);
+      await Promise.all([loadLeaderboard(), loadCurrentProgress()]);
+      setIsLoading(false);
+    };
+    loadData();
   }, []);
 
-  const refreshLeaderboard = () => {
+  const refreshLeaderboard = async () => {
     setIsRefreshing(true);
-    setTimeout(() => {
-      loadLeaderboard();
-      setIsRefreshing(false);
-    }, 500);
+    try {
+      await loadLeaderboard();
+    } catch (error) {
+      console.error('Error refreshing leaderboard:', error);
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 500);
+    }
   };
 
   const formatTime = (milliseconds: number) => {
@@ -55,8 +81,21 @@ const Leaderboard = () => {
   };
 
   const isCurrentPlayer = (entry: LeaderboardEntry) => {
+    if (!currentProgress) return false;
     return entry.playerName === currentProgress.playerName && entry.teamId === currentProgress.teamId;
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="text-center">
+            <div className="animate-pulse font-body">Loading leaderboard...</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -369,7 +408,7 @@ const Leaderboard = () => {
         )}
 
         {/* Call to Action */}
-        {currentProgress.playerName && (
+        {currentProgress?.playerName && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

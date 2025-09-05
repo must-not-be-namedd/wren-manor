@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
@@ -7,19 +7,45 @@ import { ManorButton } from '@/components/ui/manor-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skull, Crown, Users, Trophy, Clock } from 'lucide-react';
-import { getGameProgress, saveGameProgress } from '@/lib/gameState';
+import { getGameProgress, saveGameProgress, type GameProgress } from '@/lib/gameState';
 import { useToast } from '@/hooks/use-toast';
 
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<GameProgress | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const [playerName, setPlayerName] = useState(progress.playerName || '');
-  const [teamId, setTeamId] = useState(progress.teamId || '');
+  const [playerName, setPlayerName] = useState('');
+  const [teamId, setTeamId] = useState('');
   const [isStarting, setIsStarting] = useState(false);
 
-  const handleStartGame = () => {
+  useEffect(() => {
+    const loadProgress = async () => {
+      try {
+        setIsLoading(true);
+        // Try to get existing progress first
+        const existingProgress = await getGameProgress('', '');
+        setProgress(existingProgress);
+        setPlayerName(existingProgress.playerName || '');
+        setTeamId(existingProgress.teamId || '');
+      } catch (error) {
+        console.error('Error loading progress:', error);
+        setProgress({
+          p1: false, p2: false, p3: false, p4: false, p5: false,
+          p6: false, p7: false, p8: false, p9: false,
+          weapon: '', killer: '', currentPage: 0,
+          startTime: Date.now(), playerName: '', teamId: ''
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadProgress();
+  }, []);
+
+  const handleStartGame = async () => {
     if (!playerName.trim() || !teamId.trim()) {
       toast({
         title: "Missing Information",
@@ -31,22 +57,40 @@ const Home = () => {
 
     setIsStarting(true);
     
-    const newProgress = {
-      ...progress,
-      playerName: playerName.trim(),
-      teamId: teamId.trim().toUpperCase(),
-      startTime: progress.startTime || Date.now(),
-    };
-    
-    saveGameProgress(newProgress);
-    
-    // Dramatic pause before navigation
-    setTimeout(() => {
-      navigate('/puzzle1');
-    }, 1000);
+    try {
+      const newProgress: GameProgress = {
+        ...(progress || {
+          p1: false, p2: false, p3: false, p4: false, p5: false,
+          p6: false, p7: false, p8: false, p9: false,
+          weapon: '', killer: '', currentPage: 0,
+          startTime: Date.now()
+        }),
+        playerName: playerName.trim(),
+        teamId: teamId.trim().toUpperCase(),
+        startTime: progress?.startTime || Date.now(),
+      };
+      
+      await saveGameProgress(newProgress);
+      setProgress(newProgress);
+      
+      // Dramatic pause before navigation
+      setTimeout(() => {
+        navigate('/puzzle1');
+      }, 1000);
+    } catch (error) {
+      console.error('Error starting game:', error);
+      setIsStarting(false);
+      toast({
+        title: "Error",
+        description: "Failed to start the game. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleContinueGame = () => {
+    if (!progress) return;
+    
     if (progress.p9) {
       navigate('/results');
     } else if (progress.p8) {
@@ -69,6 +113,18 @@ const Home = () => {
       navigate('/puzzle1');
     }
   };
+
+  if (isLoading) {
+    return (
+      <Layout showProgress={false}>
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="text-center">
+            <div className="animate-pulse">Loading...</div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout showProgress={false}>
@@ -125,7 +181,7 @@ const Home = () => {
             </ManorCardHeader>
             
             <ManorCardContent className="space-y-4">
-              {progress.playerName && progress.teamId ? (
+              {progress?.playerName && progress?.teamId ? (
                 <div className="space-y-4">
                   <div className="text-center p-4 bg-accent/10 rounded-lg border border-accent/20">
                     <p className="text-sm text-muted-foreground">Welcome back,</p>

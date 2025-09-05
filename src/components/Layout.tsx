@@ -1,8 +1,8 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Skull, Crown, Clock } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getGameProgress } from '@/lib/gameState';
+import { getGameProgress, type GameProgress } from '@/lib/gameState';
 
 interface LayoutProps {
   children: ReactNode;
@@ -12,18 +12,40 @@ interface LayoutProps {
 export const Layout = ({ children, showProgress = true }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<GameProgress | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProgress = async () => {
+      try {
+        setIsLoading(true);
+        const gameProgress = await getGameProgress('', '');
+        setProgress(gameProgress);
+      } catch (error) {
+        console.error('Error loading progress:', error);
+        setProgress(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (showProgress) {
+      loadProgress();
+    } else {
+      setIsLoading(false);
+    }
+  }, [showProgress]);
 
   const progressItems = [
-    { completed: progress.p1, label: 'Weapon', path: '/puzzle1' },
-    { completed: progress.p2, label: 'Timeline', path: '/puzzle2' },
-    { completed: progress.p3, label: 'Alibis', path: '/puzzle3' },
-    { completed: progress.p4, label: 'Logic', path: '/puzzle4' },
-    { completed: progress.p5, label: 'Cipher', path: '/puzzle5' },
-    { completed: progress.p6, label: 'Evidence', path: '/puzzle6' },
-    { completed: progress.p7, label: 'Verdict', path: '/puzzle7' },
-    { completed: progress.p8, label: 'Inspect', path: '/puzzle8' },
-    { completed: progress.p9, label: 'Final', path: '/puzzle9' }
+    { completed: progress?.p1 || false, label: 'Weapon', path: '/puzzle1' },
+    { completed: progress?.p2 || false, label: 'Timeline', path: '/puzzle2' },
+    { completed: progress?.p3 || false, label: 'Alibis', path: '/puzzle3' },
+    { completed: progress?.p4 || false, label: 'Logic', path: '/puzzle4' },
+    { completed: progress?.p5 || false, label: 'Cipher', path: '/puzzle5' },
+    { completed: progress?.p6 || false, label: 'Evidence', path: '/puzzle6' },
+    { completed: progress?.p7 || false, label: 'Verdict', path: '/puzzle7' },
+    { completed: progress?.p8 || false, label: 'Inspect', path: '/puzzle8' },
+    { completed: progress?.p9 || false, label: 'Final', path: '/puzzle9' }
   ];
 
   return (
@@ -52,7 +74,7 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
               </div>
             </motion.div>
 
-            {showProgress && progress.playerName && (
+            {showProgress && progress?.playerName && !isLoading && (
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground font-detective">
                   <Clock className="h-4 w-4" />
