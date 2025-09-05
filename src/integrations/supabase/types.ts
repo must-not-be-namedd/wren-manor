@@ -14,7 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_progress: {
+        Row: {
+          completion_time: number | null
+          created_at: string
+          current_page: number
+          id: string
+          killer: string | null
+          p1: boolean
+          p2: boolean
+          p3: boolean
+          p4: boolean
+          p5: boolean
+          p6: boolean
+          p7: boolean
+          p8: boolean
+          p9: boolean
+          player_name: string
+          start_time: number
+          team_id: string
+          updated_at: string
+          weapon: string | null
+        }
+        Insert: {
+          completion_time?: number | null
+          created_at?: string
+          current_page?: number
+          id?: string
+          killer?: string | null
+          p1?: boolean
+          p2?: boolean
+          p3?: boolean
+          p4?: boolean
+          p5?: boolean
+          p6?: boolean
+          p7?: boolean
+          p8?: boolean
+          p9?: boolean
+          player_name: string
+          start_time?: number
+          team_id: string
+          updated_at?: string
+          weapon?: string | null
+        }
+        Update: {
+          completion_time?: number | null
+          created_at?: string
+          current_page?: number
+          id?: string
+          killer?: string | null
+          p1?: boolean
+          p2?: boolean
+          p3?: boolean
+          p4?: boolean
+          p5?: boolean
+          p6?: boolean
+          p7?: boolean
+          p8?: boolean
+          p9?: boolean
+          player_name?: string
+          start_time?: number
+          team_id?: string
+          updated_at?: string
+          weapon?: string | null
+        }
+        Relationships: []
+      }
+      leaderboard: {
+        Row: {
+          completion_time: number
+          created_at: string
+          current_progress: number
+          id: string
+          player_name: string
+          team_id: string
+          timestamp: number
+          updated_at: string
+        }
+        Insert: {
+          completion_time?: number
+          created_at?: string
+          current_progress?: number
+          id?: string
+          player_name: string
+          team_id: string
+          timestamp?: number
+          updated_at?: string
+        }
+        Update: {
+          completion_time?: number
+          created_at?: string
+          current_progress?: number
+          id?: string
+          player_name?: string
+          team_id?: string
+          timestamp?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
