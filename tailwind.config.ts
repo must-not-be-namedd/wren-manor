@@ -20,7 +20,10 @@ export default {
 		extend: {
 			fontFamily: {
 				'manor': ['Cinzel', 'serif'],
-				'body': ['Crimson Text', 'serif'],
+				'body': ['Montserrat', 'sans-serif'],
+				'detective': ['Special Elite', 'monospace'],
+				'mystery': ['Creepster', 'cursive'],
+				'classic': ['Crimson Text', 'serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

@@ -177,7 +177,7 @@ const Puzzle1 = () => {
                     animate={{ opacity: 1, height: 'auto' }}
                     className="p-4 bg-accent/10 border border-accent/20 rounded-lg"
                   >
-                    <p className="text-sm text-muted-foreground text-center font-body">
+                    <p className="text-sm text-muted-foreground text-center font-detective">
                       💡 This weapon has a sharp blade and a handle, often used by assassins 
                       and rogues throughout history. It rhymes with "stagger."
                     </p>
@@ -226,7 +226,7 @@ const Puzzle1 = () => {
           transition={{ delay: 0.8, duration: 0.6 }}
           className="text-center"
         >
-          <p className="text-sm text-muted-foreground max-w-md mx-auto font-body italic">
+          <p className="text-sm text-muted-foreground max-w-md mx-auto font-detective italic">
             "The shadows whisper secrets, but only the keen-eyed detective can hear their truths..."
           </p>
         </motion.div>

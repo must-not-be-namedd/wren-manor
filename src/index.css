@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Crimson+Text:wght@400;600&display=swap');
+/* Fonts are now loaded via index.html for better performance */
 
 /* Wren Manor Murder Mystery Design System */
 
@@ -52,7 +52,10 @@
 
     /* Typography */
     --font-manor: 'Cinzel', serif;
-    --font-body: 'Crimson Text', serif;
+    --font-body: 'Montserrat', sans-serif;
+    --font-detective: 'Special Elite', monospace;
+    --font-mystery: 'Creepster', cursive;
+    --font-classic: 'Crimson Text', serif;
 
     /* Animations */
     --transition-manor: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -128,6 +131,19 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-manor);
+  }
+
+  /* Typography utility classes */
+  .font-detective {
+    font-family: var(--font-detective);
+  }
+
+  .font-mystery {
+    font-family: var(--font-mystery);
+  }
+
+  .font-classic {
+    font-family: var(--font-classic);
   }
 }
 

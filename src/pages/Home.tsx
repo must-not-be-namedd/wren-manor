@@ -87,11 +87,11 @@ const Home = () => {
             </div>
           </div>
           
-          <h1 className="font-manor text-5xl md:text-7xl font-bold text-foreground mb-4">
+          <h1 className="font-mystery text-5xl md:text-7xl font-bold text-foreground mb-4">
             Wren Manor
           </h1>
-          <h2 className="font-manor text-2xl md:text-3xl text-primary mb-6">
-            A Murder Mystery
+          <h2 className="font-mystery text-2xl md:text-3xl text-primary mb-6">
+            A Murder Mystery Hunt Begins
           </h2>
           
           <motion.p 
