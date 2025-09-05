@@ -34,13 +34,15 @@ export const getGameProgress = (): GameProgress => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const progress = JSON.parse(stored);
+      console.log('Loaded game progress:', progress); // Debug log
+      return progress;
     }
   } catch (error) {
     console.error('Error reading game progress:', error);
   }
   
-  return {
+  const defaultProgress = {
     p1: false,
     p2: false,
     p3: false,
@@ -57,11 +59,16 @@ export const getGameProgress = (): GameProgress => {
     playerName: '',
     teamId: ''
   };
+  
+  console.log('Using default progress:', defaultProgress); // Debug log
+  return defaultProgress;
 };
 
 export const saveGameProgress = (progress: GameProgress): void => {
   try {
+    console.log('Saving game progress:', progress); // Debug log
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    console.log('Progress saved successfully'); // Debug log
     updateLeaderboard(progress);
   } catch (error) {
     console.error('Error saving game progress:', error);
