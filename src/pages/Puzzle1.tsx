@@ -8,30 +8,57 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Sword, HelpCircle, CheckCircle, ArrowRight } from 'lucide-react';
-import { getGameProgress, saveGameProgress } from '@/lib/gameState';
+import { getGameProgress, saveGameProgress, type GameProgress } from '@/lib/gameState';
 import { useToast } from '@/hooks/use-toast';
 
 const Puzzle1 = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const progress = getGameProgress();
+  const [progress, setProgress] = useState<GameProgress | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [answer, setAnswer] = useState('');
   const [showHint, setShowHint] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
 
-  // Redirect if no player info
+  // Load game progress
   useEffect(() => {
-    if (!progress.playerName || !progress.teamId) {
-      navigate('/');
-      return;
-    }
-  }, [progress.playerName, progress.teamId, navigate]);
+    const loadProgress = async () => {
+      try {
+        setIsLoading(true);
+        // Try to get from localStorage first for player info
+        const stored = localStorage.getItem('wren-manor-player');
+        let playerName = '';
+        let teamId = '';
+        
+        if (stored) {
+          const playerData = JSON.parse(stored);
+          playerName = playerData.playerName || '';
+          teamId = playerData.teamId || '';
+        }
+        
+        if (!playerName || !teamId) {
+          navigate('/');
+          return;
+        }
+        
+        const gameProgress = await getGameProgress(playerName, teamId);
+        setProgress(gameProgress);
+      } catch (error) {
+        console.error('Error loading progress:', error);
+        navigate('/');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadProgress();
+  }, [navigate]);
 
   const scrambledLetters = ['R', 'G', 'A', 'D', 'G', 'E'];
   const correctAnswer = 'DAGGER';
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!answer.trim()) {
       toast({
         title: "Enter Your Answer",
@@ -41,35 +68,47 @@ const Puzzle1 = () => {
       return;
     }
 
+    if (!progress) return;
+
     setIsChecking(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (answer.toUpperCase() === correctAnswer) {
-        const newProgress = {
-          ...progress,
-          p1: true,
-          weapon: 'Dagger',
-          currentPage: 1,
-        };
-        
-        saveGameProgress(newProgress);
-        
-        toast({
-          title: "Weapon Identified: Dagger",
-          description: "The murder weapon has been revealed! Proceed to reconstruct the timeline.",
-        });
-        
-        setTimeout(() => {
-          navigate('/puzzle2');
-        }, 2000);
+        try {
+          const newProgress: GameProgress = {
+            ...progress,
+            p1: true,
+            weapon: 'Dagger',
+            currentPage: 1,
+          };
+          
+          await saveGameProgress(newProgress);
+          setProgress(newProgress);
+          
+          toast({
+            title: "Weapon Identified: Dagger",
+            description: "The murder weapon has been revealed! Proceed to reconstruct the timeline.",
+          });
+          
+          setTimeout(() => {
+            navigate('/puzzle2');
+          }, 2000);
+        } catch (error) {
+          console.error('Error saving progress:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save progress. Please try again.",
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Incorrect Answer",
           description: "The letters don't form the correct weapon. Try again.",
           variant: "destructive",
         });
-        setIsChecking(false);
       }
+      setIsChecking(false);
     }, 1000);
   };
 
@@ -77,7 +116,17 @@ const Puzzle1 = () => {
     navigate('/puzzle2');
   };
 
-  if (!progress.playerName || !progress.teamId) {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="animate-pulse font-body">Loading puzzle...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!progress?.playerName || !progress?.teamId) {
     return null;
   }
 
@@ -153,7 +202,7 @@ const Puzzle1 = () => {
                   onChange={(e) => setAnswer(e.target.value.toUpperCase())}
                   placeholder="Enter the weapon name"
                   className="text-center text-lg font-mono tracking-widest bg-input/50 border-border focus:border-primary"
-                  disabled={progress.p1 || isChecking}
+                  disabled={progress?.p1 || isChecking}
                   maxLength={6}
                 />
               </div>
@@ -165,7 +214,7 @@ const Puzzle1 = () => {
                   size="sm"
                   onClick={() => setShowHint(!showHint)}
                   className="w-full"
-                  disabled={progress.p1}
+                  disabled={progress?.p1}
                 >
                   <HelpCircle className="h-4 w-4 mr-2" />
                   {showHint ? 'Hide Hint' : 'Show Hint'}
@@ -187,7 +236,7 @@ const Puzzle1 = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-col space-y-3">
-                {progress.p1 ? (
+                {progress?.p1 ? (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -196,7 +245,7 @@ const Puzzle1 = () => {
                     <div className="flex items-center justify-center space-x-2 p-4 bg-primary/10 border border-primary/30 rounded-lg">
                       <CheckCircle className="h-5 w-5 text-primary" />
                       <span className="text-primary font-semibold">
-                        Weapon Identified: {progress.weapon}
+                        Weapon Identified: {progress?.weapon}
                       </span>
                     </div>
                     <ManorButton onClick={handleNextPuzzle} size="lg" className="w-full">

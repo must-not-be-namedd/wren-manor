@@ -41,9 +41,9 @@ export const getGameProgress = async (playerName: string, teamId: string): Promi
       .select('*')
       .eq('player_name', playerName)
       .eq('team_id', teamId)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+    if (error) {
       console.error('Error reading game progress:', error);
       return getDefaultProgress();
     }

@@ -24,19 +24,35 @@ const Home = () => {
     const loadProgress = async () => {
       try {
         setIsLoading(true);
-        // Try to get existing progress first
-        const existingProgress = await getGameProgress('', '');
-        setProgress(existingProgress);
-        setPlayerName(existingProgress.playerName || '');
-        setTeamId(existingProgress.teamId || '');
+        // Get stored player data if available
+        const stored = localStorage.getItem('wren-manor-player');
+        let storedPlayerName = '';
+        let storedTeamId = '';
+        
+        if (stored) {
+          const playerData = JSON.parse(stored);
+          storedPlayerName = playerData.playerName || '';
+          storedTeamId = playerData.teamId || '';
+        }
+        
+        if (storedPlayerName && storedTeamId) {
+          const existingProgress = await getGameProgress(storedPlayerName, storedTeamId);
+          setProgress(existingProgress);
+          setPlayerName(existingProgress.playerName || storedPlayerName);
+          setTeamId(existingProgress.teamId || storedTeamId);
+        } else {
+          const defaultProgress = await getGameProgress('', '');
+          setProgress(defaultProgress);
+        }
       } catch (error) {
         console.error('Error loading progress:', error);
-        setProgress({
+        const defaultProgress: GameProgress = {
           p1: false, p2: false, p3: false, p4: false, p5: false,
           p6: false, p7: false, p8: false, p9: false,
           weapon: '', killer: '', currentPage: 0,
           startTime: Date.now(), playerName: '', teamId: ''
-        });
+        };
+        setProgress(defaultProgress);
       } finally {
         setIsLoading(false);
       }
@@ -72,6 +88,12 @@ const Home = () => {
       
       await saveGameProgress(newProgress);
       setProgress(newProgress);
+      
+      // Store player info for puzzle pages
+      localStorage.setItem('wren-manor-player', JSON.stringify({
+        playerName: playerName.trim(),
+        teamId: teamId.trim().toUpperCase()
+      }));
       
       // Dramatic pause before navigation
       setTimeout(() => {
