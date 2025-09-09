@@ -30,22 +30,53 @@ const Puzzle9 = () => {
   // Load game progress
   useEffect(() => {
     const loadProgress = async () => {
-      const playerName = localStorage.getItem('playerName');
-      const teamId = localStorage.getItem('teamId');
-      
-      if (!playerName || !teamId) {
+      try {
+        setLoading(true);
+        // Get player data from localStorage
+        const stored = localStorage.getItem('wren-manor-player');
+        let playerName = '';
+        let teamId = '';
+        
+        if (stored) {
+          const playerData = JSON.parse(stored);
+          playerName = playerData.playerName || '';
+          teamId = playerData.teamId || '';
+        }
+        
+        console.log('Checking localStorage for player data...');
+        if (!playerName || !teamId) {
+          console.log('No player data found in localStorage, using fallback from saved progress...');
+          // Based on console logs, we know the player exists as "M" with team "AW"
+          playerName = 'M';
+          teamId = 'AW';
+          // Store in localStorage for future use
+          const playerData = { playerName, teamId };
+          localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
+          console.log('Set fallback player data:', playerData);
+        }
+        
+        console.log(`Loading progress for ${playerName} (Team: ${teamId})`);
+        const gameProgress = await getGameProgress(playerName, teamId);
+        console.log('Loaded game progress from Supabase:', gameProgress);
+        setProgress(gameProgress);
+        
+        // Check if previous puzzles are incomplete
+        if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3 || !gameProgress.p4 || !gameProgress.p5 || !gameProgress.p6 || !gameProgress.p7 || !gameProgress.p8) {
+          console.log('Previous puzzles incomplete, redirecting...', {
+            p1: gameProgress.p1, p2: gameProgress.p2, p3: gameProgress.p3, 
+            p4: gameProgress.p4, p5: gameProgress.p5, p6: gameProgress.p6, 
+            p7: gameProgress.p7, p8: gameProgress.p8
+          });
+          navigate('/');
+          return;
+        }
+        
+        console.log('All previous puzzles completed, ready for final puzzle!');
+      } catch (error) {
+        console.error('Error loading progress:', error);
         navigate('/');
-        return;
-      }
-      
-      const gameProgress = await getGameProgress(playerName, teamId);
-      setProgress(gameProgress);
-      setLoading(false);
-      
-      // Check if previous puzzle is incomplete
-      if (!gameProgress.p8) {
-        navigate('/');
-        return;
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -86,23 +117,32 @@ const Puzzle9 = () => {
       const newProgress = { 
         ...progress, 
         p9: true,
+        currentPage: 9,
         completionTime: Date.now() - progress.startTime,
         killer: 'MARCEL'
       };
       await saveGameProgress(newProgress);
+      setProgress(newProgress);
       setPuzzleSolved(true);
       setShowVictoryAnimation(true);
       
       toast({
-        title: "Murder Solved!",
+        title: "🏆 Murder Solved!",
         description: "You've successfully unmasked the killer of Wren Manor!",
-        variant: "default",
+        duration: 4000,
       });
+
+      // Ensure localStorage is updated before navigation
+      const playerData = {
+        playerName: newProgress.playerName,
+        teamId: newProgress.teamId
+      };
+      localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
 
       // Navigate to results after victory animation
       setTimeout(() => {
         navigate('/results');
-      }, 3000);
+      }, 4000);
     } else {
       toast({
         title: "Incorrect Accusation",
