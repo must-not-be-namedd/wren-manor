@@ -87,7 +87,7 @@ const Puzzle8 = () => {
         // If puzzle already completed, redirect to next
         if (gameProgress.p8 && gameProgress.currentPage > 7) {
           console.log('Puzzle 8 already completed, redirecting to next puzzle...');
-          navigate('/puzzle9');
+          navigate('/puzzle-9');
           return;
         }
         
@@ -165,14 +165,14 @@ const Puzzle8 = () => {
         localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
 
         setTimeout(() => {
-          navigate('/puzzle9');
+          navigate('/puzzle-9');
         }, 2000);
       }
     }
   };
 
   const handleNext = () => {
-    navigate('/puzzle9');
+    navigate('/puzzle-9');
   };
 
   if (loading || !progress) {

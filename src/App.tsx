@@ -27,15 +27,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/puzzle1" element={<Puzzle1 />} />
-          <Route path="/puzzle2" element={<Puzzle2 />} />
-          <Route path="/puzzle3" element={<Puzzle3 />} />
-          <Route path="/puzzle4" element={<Puzzle4 />} />
-          <Route path="/puzzle5" element={<Puzzle5 />} />
-          <Route path="/puzzle6" element={<Puzzle6 />} />
-          <Route path="/puzzle7" element={<Puzzle7 />} />
-          <Route path="/puzzle8" element={<Puzzle8 />} />
-          <Route path="/puzzle9" element={<Puzzle9 />} />
+          <Route path="/puzzle-1" element={<Puzzle1 />} />
+          <Route path="/puzzle-2" element={<Puzzle2 />} />
+          <Route path="/puzzle-3" element={<Puzzle3 />} />
+          <Route path="/puzzle-4" element={<Puzzle4 />} />
+          <Route path="/puzzle-5" element={<Puzzle5 />} />
+          <Route path="/puzzle-6" element={<Puzzle6 />} />
+          <Route path="/puzzle-7" element={<Puzzle7 />} />
+          <Route path="/puzzle-8" element={<Puzzle8 />} />
+          <Route path="/puzzle-9" element={<Puzzle9 />} />
           <Route path="/results" element={<Results />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

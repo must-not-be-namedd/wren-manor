@@ -55,7 +55,7 @@ const Puzzle1 = () => {
         // If we have progress but somehow ended up on wrong puzzle, redirect appropriately
         if (gameProgress && gameProgress.p1 && gameProgress.currentPage > 0) {
           console.log('Player already completed puzzle 1, redirecting to next puzzle...');
-          navigate('/puzzle2');
+          navigate('/puzzle-2');
           return;
         }
       } catch (error) {
@@ -125,9 +125,9 @@ const Puzzle1 = () => {
           localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
           
           console.log('Navigating to puzzle 2 in 2 seconds...');
-          setTimeout(() => {
-            navigate('/puzzle2');
-          }, 2000);
+        setTimeout(() => {
+          navigate('/puzzle-2');
+        }, 2000);
         } catch (error) {
           console.error('Error saving progress:', error);
           toast({
@@ -148,7 +148,7 @@ const Puzzle1 = () => {
   };
 
   const handleNextPuzzle = () => {
-    navigate('/puzzle2');
+    navigate('/puzzle-2');
   };
 
   if (isLoading) {

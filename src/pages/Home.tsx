@@ -97,7 +97,7 @@ const Home = () => {
       
       // Dramatic pause before navigation
       setTimeout(() => {
-        navigate('/puzzle1');
+        navigate('/puzzle-1');
       }, 1000);
     } catch (error) {
       console.error('Error starting game:', error);
@@ -116,23 +116,23 @@ const Home = () => {
     if (progress.p9) {
       navigate('/results');
     } else if (progress.p8) {
-      navigate('/puzzle9');
+      navigate('/puzzle-9');
     } else if (progress.p7) {
-      navigate('/puzzle8');
+      navigate('/puzzle-8');
     } else if (progress.p6) {
-      navigate('/puzzle7');
+      navigate('/puzzle-7');
     } else if (progress.p5) {
-      navigate('/puzzle6');
+      navigate('/puzzle-6');
     } else if (progress.p4) {
-      navigate('/puzzle5');
+      navigate('/puzzle-5');
     } else if (progress.p3) {
-      navigate('/puzzle4');
+      navigate('/puzzle-4');
     } else if (progress.p2) {
-      navigate('/puzzle3');
+      navigate('/puzzle-3');
     } else if (progress.p1) {
-      navigate('/puzzle2');
+      navigate('/puzzle-2');
     } else {
-      navigate('/puzzle1');
+      navigate('/puzzle-1');
     }
   };
 

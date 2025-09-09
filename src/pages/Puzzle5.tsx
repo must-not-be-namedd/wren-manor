@@ -76,17 +76,17 @@ const Puzzle5 = () => {
         // Check if previous puzzles are incomplete
         if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3 || !gameProgress.p4) {
           console.log('Previous puzzles incomplete, redirecting...');
-          if (!gameProgress.p1) navigate('/puzzle1');
-          else if (!gameProgress.p2) navigate('/puzzle2');
-          else if (!gameProgress.p3) navigate('/puzzle3');
-          else navigate('/puzzle4');
+          if (!gameProgress.p1) navigate('/puzzle-1');
+          else if (!gameProgress.p2) navigate('/puzzle-2');
+          else if (!gameProgress.p3) navigate('/puzzle-3');
+          else navigate('/puzzle-4');
           return;
         }
 
         // If puzzle already completed, redirect to next
         if (gameProgress.p5 && gameProgress.currentPage > 4) {
           console.log('Puzzle 5 already completed, redirecting to next puzzle...');
-          navigate('/puzzle6');
+          navigate('/puzzle-6');
           return;
         }
       } catch (error) {
@@ -133,7 +133,7 @@ const Puzzle5 = () => {
       localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
 
       setTimeout(() => {
-        navigate('/puzzle6');
+        navigate('/puzzle-6');
       }, 2000);
     } else {
       toast({
@@ -145,7 +145,7 @@ const Puzzle5 = () => {
   };
 
   const handleNext = () => {
-    navigate('/puzzle6');
+    navigate('/puzzle-6');
   };
 
   if (loading || !progress) {
