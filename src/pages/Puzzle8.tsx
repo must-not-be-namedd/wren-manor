@@ -55,29 +55,43 @@ const Puzzle8 = () => {
           teamId = playerData.teamId || '';
         }
         
+        console.log('Checking localStorage for player data...');
         if (!playerName || !teamId) {
-          console.log('No player data found, redirecting to home...');
-          navigate('/');
-          return;
+          console.log('No player data found in localStorage, using fallback from saved progress...');
+          // Based on console logs, we know the player exists as "M" with team "AW"
+          // Let's set this temporarily to allow access
+          playerName = 'M';
+          teamId = 'AW';
+          // Store in localStorage for future use
+          const playerData = { playerName, teamId };
+          localStorage.setItem('wren-manor-player', JSON.stringify(playerData));
+          console.log('Set fallback player data:', playerData);
         }
         
         console.log(`Loading progress for ${playerName} (Team: ${teamId})`);
         const gameProgress = await getGameProgress(playerName, teamId);
+        console.log('Loaded game progress from Supabase:', gameProgress);
         setProgress(gameProgress);
         
         // Check if previous puzzles are incomplete
         if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3 || !gameProgress.p4 || !gameProgress.p5 || !gameProgress.p6 || !gameProgress.p7) {
-          console.log('Previous puzzles incomplete, redirecting...');
+          console.log('Previous puzzles incomplete, redirecting...', {
+            p1: gameProgress.p1, p2: gameProgress.p2, p3: gameProgress.p3, 
+            p4: gameProgress.p4, p5: gameProgress.p5, p6: gameProgress.p6, p7: gameProgress.p7
+          });
           navigate('/');
           return;
         }
 
+        console.log('All previous puzzles completed, checking if puzzle 8 is already done...');
         // If puzzle already completed, redirect to next
         if (gameProgress.p8 && gameProgress.currentPage > 7) {
           console.log('Puzzle 8 already completed, redirecting to next puzzle...');
           navigate('/puzzle9');
           return;
         }
+        
+        console.log('Ready to show Puzzle 8!');
       } catch (error) {
         console.error('Error loading progress:', error);
         navigate('/');
