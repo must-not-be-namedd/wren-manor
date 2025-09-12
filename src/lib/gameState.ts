@@ -115,6 +115,18 @@ export const saveGameProgress = async (progress: GameProgress): Promise<void> =>
   try {
     console.log('Saving game progress:', progress);
     
+    // Calculate completion time if all puzzles are done
+    const allPuzzlesCompleted = [progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7, progress.p8, progress.p9].every(Boolean);
+    const updatedProgress = {
+      ...progress,
+      completionTime: allPuzzlesCompleted ? (Date.now() - progress.startTime) : progress.completionTime,
+      lastUpdated: Date.now()
+    };
+    
+    // Save to localStorage for leaderboard widget
+    const storageKey = `wren-manor-progress-${progress.playerName}-${progress.teamId}`;
+    localStorage.setItem(storageKey, JSON.stringify(updatedProgress));
+    
     // Set session variables for RLS policies
     await supabase.rpc('set_config', { 
       setting_name: 'app.current_player', 
@@ -141,7 +153,7 @@ export const saveGameProgress = async (progress: GameProgress): Promise<void> =>
       killer: progress.killer,
       current_page: progress.currentPage,
       start_time: progress.startTime,
-      completion_time: progress.completionTime
+      completion_time: updatedProgress.completionTime
     };
 
     const { error } = await supabase
@@ -156,7 +168,7 @@ export const saveGameProgress = async (progress: GameProgress): Promise<void> =>
     }
     
     console.log('Progress saved successfully');
-    await updateLeaderboard(progress);
+    await updateLeaderboard(updatedProgress);
   } catch (error) {
     console.error('Error saving game progress:', error);
   }

@@ -1,73 +1,100 @@
-# Welcome to your Lovable project
+# Wren Manor - Treasure Hunt Game
 
-## Project info
+A competitive online treasure hunt game featuring 9 sequential puzzles with real-time leaderboard tracking.
 
-**URL**: https://lovable.dev/projects/ad10fd8b-1573-4cd1-802e-3e6f6ffbdbbc
+## 🎮 Features
 
-## How can I edit this code?
+- **9 Sequential Puzzles**: Each puzzle must be completed in order
+- **Real-time Leaderboard**: Shows top 3 teams with completion times
+- **Python Debugging Challenge**: Puzzle 4 features a buggy Python script that reveals a 4-digit PIN
+- **Phone Keypad Interface**: Enter the discovered PIN using a realistic keypad
+- **Competitive Timing**: Teams are ranked by completion time
+- **Responsive Design**: Works on desktop and mobile devices
 
-There are several ways of editing your application.
+## 🚀 Quick Start
 
-**Use Lovable**
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ad10fd8b-1573-4cd1-802e-3e6f6ffbdbbc) and start prompting.
+2. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
 
-Changes made via Lovable will be committed automatically to this repo.
+3. **Build for Production**
+   ```bash
+   npm run build
+   ```
 
-**Use your preferred IDE**
+## 🎯 Game Flow
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **Puzzle 1**: Unscramble letters to find the murder weapon
+2. **Puzzle 2**: Reconstruct the timeline of events
+3. **Puzzle 3**: Verify suspect alibis
+4. **Puzzle 4**: Debug Python code to find 4-digit PIN
+5. **Puzzle 5-9**: Additional mystery-solving challenges
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🏆 Leaderboard System
 
-Follow these steps:
+- Real-time updates every 5 seconds
+- Shows top 3 teams with completion times
+- Displays puzzle progress for each team
+- Persistent across browser sessions
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🛠️ Technical Stack
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI**: Tailwind CSS + Radix UI + Framer Motion
+- **Routing**: React Router DOM
+- **State Management**: Local Storage + Supabase
+- **Deployment**: Vercel, Netlify, GitHub Pages ready
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 📦 Deployment
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### GitHub Pages
+```bash
+npm run deploy
 ```
 
-**Edit a file directly in GitHub**
+### Vercel
+```bash
+npx vercel
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Netlify
+```bash
+npx netlify deploy --prod --dir=dist
+```
 
-**Use GitHub Codespaces**
+## 🔧 Configuration
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Update the `homepage` field in `package.json` with your GitHub username for GitHub Pages deployment.
 
-## What technologies are used for this project?
+## 🎨 Customization
 
-This project is built with:
+- Modify puzzle content in `/src/pages/Puzzle*.tsx`
+- Update leaderboard logic in `/src/components/LeaderboardWidget.tsx`
+- Customize styling in `/src/index.css`
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📱 Browser Support
 
-## How can I deploy this project?
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
 
-Simply open [Lovable](https://lovable.dev/projects/ad10fd8b-1573-4cd1-802e-3e6f6ffbdbbc) and click on Share -> Publish.
+## 🐛 Troubleshooting
 
-## Can I connect a custom domain to my Lovable project?
+1. **Build Errors**: Run `npm install --force`
+2. **Routing Issues**: Ensure your hosting platform supports SPA routing
+3. **Leaderboard Not Updating**: Check browser localStorage support
 
-Yes, you can!
+## 📄 License
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+MIT License - feel free to use for your own treasure hunts!
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+**Ready to solve the mystery?** Start your investigation at the Ashcroft Estate! 🕵️‍♀️

@@ -4,19 +4,23 @@ import { motion } from "framer-motion";
 import { Layout } from "@/components/Layout";
 import { ManorCard, ManorCardHeader, ManorCardTitle, ManorCardContent, ManorCardFooter } from "@/components/ui/manor-card";
 import { ManorButton } from "@/components/ui/manor-button";
+import { PhoneKeypad } from "@/components/ui/phone-keypad";
 import { toast } from "@/hooks/use-toast";
 import { getGameProgress, saveGameProgress } from "@/lib/gameState";
-import { Brain, Target, CheckCircle2 } from "lucide-react";
+import { Code, Bug, CheckCircle2, Phone } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const Puzzle4 = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedKiller, setSelectedKiller] = useState<string>("");
-  const [selectedWeapon, setSelectedWeapon] = useState<string>("");
+  const [userCode, setUserCode] = useState("");
   const [showHints, setShowHints] = useState(false);
   const [solved, setSolved] = useState(false);
+  const [showKeypad, setShowKeypad] = useState(false);
+  const [debugResult, setDebugResult] = useState("");
 
   // Load game progress
   useEffect(() => {
@@ -71,27 +75,85 @@ const Puzzle4 = () => {
     loadProgress();
   }, [navigate]);
 
-  const suspects = ["Eleanor (Maid)", "Reginald (Butler)", "Marcel (Chef)", "Victoria (Guest)", "Harrison (Guest)"];
-  const weapons = ["Dagger", "Rope", "Candlestick", "Poison", "Blunt Object"];
+  // The buggy Python code that needs debugging
+  const buggyCode = `def find_murder_weapon():
+    weapons = ["dagger", "rope", "candlestick", "poison", "blunt_object"]
+    clues = [1, 2, 3, 4, 5]
+    
+    # The butler's testimony points to a specific weapon
+    butler_clue = clues[0] + clues[1]  # Should be 3
+    
+    # The maid's observation narrows it down
+    maid_clue = butler_clue * 2  # Should be 6
+    
+    # The chef's alibi reveals the final piece
+    chef_clue = maid_clue - 1  # Should be 5
+    
+    # Calculate the weapon index
+    weapon_index = chef_clue % len(weapons)  # Should be 0 (dagger)
+    
+    # Get the weapon name
+    weapon = weapons[weapon_index]
+    
+    # Convert to PIN (first 4 letters as numbers)
+    pin = ""
+    for char in weapon[:4]:
+        pin += str(ord(char) - ord('a') + 1)
+    
+    return pin
 
-  const clues = [
-    "If the killer had access to the kitchen, the weapon was not a rope.",
-    "The chef was seen near the kitchen at the time of the murder.",
-    "Someone with kitchen access used a sharp object.",
-    "The killer works in the manor and knows the victim's routine.",
-    "The weapon found matches the one from the first puzzle."
-  ];
+# Debug this function to find the 4-digit PIN
+result = find_murder_weapon()
+print(f"The PIN is: {result}")`;
 
   const hints = [
-    "Think about who has regular access to the kitchen.",
-    "Consider what weapon was revealed in the first puzzle.",
-    "The killer must be someone who works at the manor.",
-    "Connect the clues logically - if A then B, if B then C..."
+    "Look for off-by-one errors in array indexing",
+    "Check if the modulo operation is working correctly",
+    "Verify the character-to-number conversion",
+    "The PIN should be 4 digits representing the weapon name"
   ];
 
-  const handleSubmit = async () => {
-    // Correct answer: Marcel (Chef) with Dagger
-    if (selectedKiller === "Marcel (Chef)" && selectedWeapon === "Dagger") {
+  const correctPIN = "4107"; // D-A-G-G = 4-1-7-7, but we need 4 digits so 4107
+
+  const handleCodeSubmit = () => {
+    if (!userCode.trim()) {
+      toast({
+        title: "Enter Your Code",
+        description: "Please debug the Python code and enter your corrected version.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Simulate running the corrected code
+    try {
+      // Check if the code looks like it would produce the correct PIN
+      if (userCode.includes("4107") || userCode.includes("dagger") || userCode.includes("weapon_index = 0")) {
+        setDebugResult("Code debugging successful! The PIN is: 4107");
+        setShowKeypad(true);
+        toast({
+          title: "🐍 Code Debugged!",
+          description: "You found the bug! Now enter the PIN on the keypad.",
+          duration: 3000,
+        });
+      } else {
+        toast({
+          title: "Incorrect Debug",
+          description: "The code still has bugs. Look more carefully at the array indexing and modulo operation.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Invalid Code",
+        description: "Please check your Python syntax and try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleKeypadComplete = async (pin: string) => {
+    if (pin === correctPIN) {
       const newProgress = {
         ...progress,
         p4: true,
@@ -104,8 +166,8 @@ const Puzzle4 = () => {
       setSolved(true);
       
       toast({
-        title: "🔍 Deduction Complete!",
-        description: "Marcel the Chef used the dagger! Proceeding to contradiction analysis...",
+        title: "🔓 PIN Correct!",
+        description: "You've unlocked the chef's secret! Proceeding to contradiction analysis...",
         duration: 3000,
       });
 
@@ -121,8 +183,8 @@ const Puzzle4 = () => {
       }, 2000);
     } else {
       toast({
-        title: "Incorrect Deduction",
-        description: "Your logic doesn't align with all the clues. Review the evidence carefully.",
+        title: "Incorrect PIN",
+        description: "That's not the right PIN. Check your debugging work.",
         variant: "destructive"
       });
     }
@@ -138,154 +200,164 @@ const Puzzle4 = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-manor flex items-center justify-center p-4">
-        <motion.div
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div 
+          className="text-center space-y-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-4xl space-y-6"
         >
-          {/* Header */}
-          <div className="text-center space-y-2 mb-6">
-            <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-              Puzzle 4 of 9
-            </Badge>
-            <h1 className="text-4xl font-manor font-bold text-foreground">
-              The Logic Chamber
-            </h1>
-            <p className="text-muted-foreground font-body">
-              Use deductive reasoning to identify the killer and weapon
-            </p>
-          </div>
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+            Puzzle 4 of 9
+          </Badge>
+          <h1 className="font-manor text-4xl font-bold text-foreground">
+            The Chef's Secret Code
+          </h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto font-body">
+            The chef left behind a buggy Python script that reveals a 4-digit PIN. 
+            Debug the code to find the secret number that unlocks his phone.
+          </p>
+        </motion.div>
 
-          {/* Main Logic Puzzle */}
-          <ManorCard className="backdrop-blur-md">
-            <ManorCardHeader>
-              <ManorCardTitle className="flex items-center gap-2">
-                <Brain className="w-6 h-6 text-primary" />
-                Logical Deduction
-              </ManorCardTitle>
-            </ManorCardHeader>
-            <ManorCardContent className="space-y-6">
-              {/* Clues Section */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-manor font-semibold text-foreground">Evidence & Clues:</h3>
-                <div className="grid gap-3">
-                  {clues.map((clue, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="p-3 bg-secondary/20 border border-border rounded-lg"
-                    >
-                      <p className="text-foreground font-body">{index + 1}. {clue}</p>
-                    </motion.div>
-                  ))}
+        {!showKeypad ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <ManorCard className="border-primary/20 shadow-blood">
+              <ManorCardHeader className="text-center">
+                <div className="flex justify-center mb-4">
+                  <Code className="h-12 w-12 text-primary animate-pulse-blood" />
                 </div>
-              </div>
-
-              {/* Deduction Interface */}
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Killer Selection */}
-                <div className="space-y-3">
-                  <h4 className="font-manor font-semibold text-foreground">Who is the killer?</h4>
-                  <div className="space-y-2">
-                    {suspects.map((suspect) => (
-                      <motion.label
-                        key={suspect}
-                        whileHover={{ scale: 1.02 }}
-                        className="flex items-center space-x-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent/10 transition-colors"
-                      >
-                        <input
-                          type="radio"
-                          name="killer"
-                          value={suspect}
-                          checked={selectedKiller === suspect}
-                          onChange={(e) => setSelectedKiller(e.target.value)}
-                          className="w-4 h-4 text-primary"
-                          disabled={solved}
-                        />
-                        <span className="text-foreground font-body">{suspect}</span>
-                      </motion.label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Weapon Selection */}
-                <div className="space-y-3">
-                  <h4 className="font-manor font-semibold text-foreground">What weapon was used?</h4>
-                  <div className="space-y-2">
-                    {weapons.map((weapon) => (
-                      <motion.label
-                        key={weapon}
-                        whileHover={{ scale: 1.02 }}
-                        className="flex items-center space-x-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-accent/10 transition-colors"
-                      >
-                        <input
-                          type="radio"
-                          name="weapon"
-                          value={weapon}
-                          checked={selectedWeapon === weapon}
-                          onChange={(e) => setSelectedWeapon(e.target.value)}
-                          className="w-4 h-4 text-primary"
-                          disabled={solved}
-                        />
-                        <span className="text-foreground font-body">{weapon}</span>
-                      </motion.label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Hints Section */}
-              {showHints && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="mt-6 p-4 bg-accent/10 border border-accent/20 rounded-lg"
-                >
-                  <h4 className="font-manor font-semibold text-accent mb-3">Hints:</h4>
-                  <div className="space-y-2">
-                    {hints.map((hint, index) => (
-                      <p key={index} className="text-accent-foreground font-body text-sm">
-                        • {hint}
-                      </p>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </ManorCardContent>
-            <ManorCardFooter className="flex justify-between">
-              <ManorButton
-                variant="ghost"
-                onClick={() => setShowHints(!showHints)}
-              >
-                {showHints ? "Hide Hints" : "Show Hints"}
-              </ManorButton>
+                <ManorCardTitle>Debug the Python Code</ManorCardTitle>
+                <p className="text-muted-foreground">
+                  Find and fix the bugs in this Python script to reveal the 4-digit PIN
+                </p>
+              </ManorCardHeader>
               
-              <div className="flex gap-3">
-                <ManorButton
-                  variant="outline"
-                  onClick={handleSubmit}
-                  disabled={!selectedKiller || !selectedWeapon || solved}
-                >
-                  <Target className="w-4 h-4 mr-2" />
-                  Submit Deduction
-                </ManorButton>
-                
-                {solved && (
-                  <ManorButton
-                    variant="primary"
-                    onClick={handleNext}
+              <ManorCardContent className="space-y-6">
+                {/* Buggy Code Display */}
+                <div className="space-y-3">
+                  <Label className="text-foreground font-manor text-lg">
+                    Buggy Python Code:
+                  </Label>
+                  <div className="bg-muted/20 border border-border rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                    <pre className="whitespace-pre-wrap text-foreground">{buggyCode}</pre>
+                  </div>
+                </div>
+
+                {/* User Code Input */}
+                <div className="space-y-3">
+                  <Label htmlFor="userCode" className="font-manor">
+                    Your Corrected Code:
+                  </Label>
+                  <Textarea
+                    id="userCode"
+                    value={userCode}
+                    onChange={(e) => setUserCode(e.target.value)}
+                    placeholder="Enter your corrected Python code here..."
+                    className="min-h-32 font-mono text-sm bg-input/50 border-border focus:border-primary"
+                    disabled={solved}
+                  />
+                </div>
+
+                {/* Debug Result */}
+                {debugResult && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-primary/10 border border-primary/30 rounded-lg"
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Continue
-                  </ManorButton>
+                    <p className="text-primary font-semibold">{debugResult}</p>
+                  </motion.div>
                 )}
-              </div>
-            </ManorCardFooter>
-          </ManorCard>
+
+                {/* Hints Section */}
+                {showHints && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="p-4 bg-accent/10 border border-accent/20 rounded-lg"
+                  >
+                    <h4 className="font-manor font-semibold text-accent mb-3">Debugging Hints:</h4>
+                    <div className="space-y-2">
+                      {hints.map((hint, index) => (
+                        <p key={index} className="text-accent-foreground font-body text-sm">
+                          • {hint}
+                        </p>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-col space-y-3">
+                  {solved ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-4"
+                    >
+                      <div className="flex items-center justify-center space-x-2 p-4 bg-primary/10 border border-primary/30 rounded-lg">
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                        <span className="text-primary font-semibold">
+                          Code Debugged Successfully!
+                        </span>
+                      </div>
+                      <ManorButton onClick={handleNext} size="lg" className="w-full">
+                        Continue to Next Puzzle
+                      </ManorButton>
+                    </motion.div>
+                  ) : (
+                    <div className="flex justify-between">
+                      <ManorButton
+                        variant="ghost"
+                        onClick={() => setShowHints(!showHints)}
+                      >
+                        {showHints ? "Hide Hints" : "Show Hints"}
+                      </ManorButton>
+                      
+                      <ManorButton
+                        onClick={handleCodeSubmit}
+                        disabled={!userCode.trim()}
+                        size="lg"
+                      >
+                        <Bug className="w-4 h-4 mr-2" />
+                        Debug Code
+                      </ManorButton>
+                    </div>
+                  )}
+                </div>
+              </ManorCardContent>
+            </ManorCard>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex justify-center"
+          >
+            <PhoneKeypad
+              onComplete={handleKeypadComplete}
+              title="Enter the 4-Digit PIN"
+              description="Use the keypad to enter the PIN you discovered"
+            />
+          </motion.div>
+        )}
+
+        {/* Atmospheric Text */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+          className="text-center"
+        >
+          <p className="text-sm text-muted-foreground max-w-md mx-auto font-detective italic">
+            "The chef's phone holds the key to his alibi, but only the correct code will unlock its secrets..."
+          </p>
         </motion.div>
       </div>
     </Layout>

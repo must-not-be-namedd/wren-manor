@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Skull, Crown, Clock } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getGameProgress, type GameProgress } from '@/lib/gameState';
+import { LeaderboardWidget } from '@/components/LeaderboardWidget';
 
 interface LayoutProps {
   children: ReactNode;
@@ -37,15 +38,15 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
   }, [showProgress]);
 
   const progressItems = [
-    { completed: progress?.p1 || false, label: 'Weapon', path: '/puzzle1' },
-    { completed: progress?.p2 || false, label: 'Timeline', path: '/puzzle2' },
-    { completed: progress?.p3 || false, label: 'Alibis', path: '/puzzle3' },
-    { completed: progress?.p4 || false, label: 'Logic', path: '/puzzle4' },
-    { completed: progress?.p5 || false, label: 'Cipher', path: '/puzzle5' },
-    { completed: progress?.p6 || false, label: 'Evidence', path: '/puzzle6' },
-    { completed: progress?.p7 || false, label: 'Verdict', path: '/puzzle7' },
-    { completed: progress?.p8 || false, label: 'Inspect', path: '/puzzle8' },
-    { completed: progress?.p9 || false, label: 'Final', path: '/puzzle9' }
+    { completed: progress?.p1 || false, label: 'Weapon', path: '/puzzle-1' },
+    { completed: progress?.p2 || false, label: 'Timeline', path: '/puzzle-2' },
+    { completed: progress?.p3 || false, label: 'Alibis', path: '/puzzle-3' },
+    { completed: progress?.p4 || false, label: 'Code', path: '/puzzle-4' },
+    { completed: progress?.p5 || false, label: 'Cipher', path: '/puzzle-5' },
+    { completed: progress?.p6 || false, label: 'Evidence', path: '/puzzle-6' },
+    { completed: progress?.p7 || false, label: 'Verdict', path: '/puzzle-7' },
+    { completed: progress?.p8 || false, label: 'Inspect', path: '/puzzle-8' },
+    { completed: progress?.p9 || false, label: 'Final', path: '/puzzle-9' }
   ];
 
   return (
@@ -126,6 +127,9 @@ export const Layout = ({ children, showProgress = true }: LayoutProps) => {
           {children}
         </motion.div>
       </main>
+
+      {/* Leaderboard Widget */}
+      <LeaderboardWidget />
 
       {/* Atmospheric Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
