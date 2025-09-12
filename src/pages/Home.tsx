@@ -166,10 +166,10 @@ const Home = () => {
           </div>
           
           <h1 className="font-mystery text-5xl md:text-7xl font-bold text-foreground mb-4">
-            Wren Manor
+            Ashcroft Estate
           </h1>
           <h2 className="font-mystery text-2xl md:text-3xl text-primary mb-6">
-            A Murder Mystery Hunt Begins
+            The Dark Secret of Lord Ashcroft
           </h2>
           
           <motion.p 
@@ -178,10 +178,10 @@ const Home = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            The shadows of Wren Manor conceal a deadly secret. A murder has been committed, 
-            and only the most cunning investigators can uncover the truth. Navigate through 
-            nine challenging puzzles to reveal the weapon, decode secret messages, 
-            and expose the killer in this immersive murder mystery experience with real-time leaderboards.
+            Lord Ashcroft lies dead in his study, and the storm outside has trapped everyone within. 
+            The Butler swears trouble began before dinner, the Chef insists the quarrel was over wine choice, 
+            while Lady Ashcroft claims it was merely a husband's temper. But someone is lying. 
+            Piece together the timeline and uncover the truth in this deadly game of deception.
           </motion.p>
         </motion.div>
 
@@ -198,7 +198,7 @@ const Home = () => {
                 <span>Enter the Investigation</span>
               </ManorCardTitle>
               <ManorCardDescription>
-                Join the hunt for the killer at Wren Manor
+                Join the investigation at Ashcroft Estate
               </ManorCardDescription>
             </ManorCardHeader>
             
@@ -295,7 +295,7 @@ const Home = () => {
             </ManorCardHeader>
             <ManorCardContent>
               <ManorCardDescription>
-                Uncover weapons, decode ciphers, analyze contradictions, query databases, and expose the killer in this immersive murder mystery.
+                Unscramble letters, reconstruct the fateful night, verify suspect alibis, and piece together the truth behind Lord Ashcroft's demise.
               </ManorCardDescription>
             </ManorCardContent>
           </ManorCard>
@@ -319,7 +319,7 @@ const Home = () => {
             </ManorCardHeader>
             <ManorCardContent>
               <ManorCardDescription>
-                Every second counts as you navigate through the dark secrets of Wren Manor.
+                Every second counts as you uncover the dark secrets hidden within Ashcroft Estate's walls.
               </ManorCardDescription>
             </ManorCardContent>
           </ManorCard>

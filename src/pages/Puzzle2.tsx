@@ -72,11 +72,11 @@ const Puzzle2 = () => {
   }, [navigate]);
 
   const correctEvents: Event[] = [
-    { id: 1, text: "Lady Wren hosts the evening gathering", time: "" },
-    { id: 2, text: "Mysterious guest arrives at the manor", time: "" },
-    { id: 3, text: "Lights flicker during dinner service", time: "" },
-    { id: 4, text: "Loud crash heard from the library", time: "" },
-    { id: 5, text: "Complete blackout engulfs the manor", time: "" }
+    { id: 1, text: "The evening dinner is served to gathered guests", time: "" },
+    { id: 2, text: "The Butler and Chef begin a heated argument over wine", time: "" },
+    { id: 3, text: "A tremendous crash echoes from Lord Ashcroft's study", time: "" },
+    { id: 4, text: "All lights suddenly extinguish, plunging the estate into darkness", time: "" },
+    { id: 5, text: "Lord Ashcroft's lifeless body is discovered in his study", time: "" }
   ];
 
   const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
@@ -174,8 +174,8 @@ const Puzzle2 = () => {
         setProgress(newProgress);
         
         toast({
-          title: "📅 Timeline Reconstructed!",
-          description: "Murder occurred between the crash and the blackout. Proceeding to alibi investigation...",
+          title: "📅 The Night Revealed!",
+          description: "Murder occurred between the crash and blackout. Time to question the suspects...",
           duration: 3000,
         });
         
@@ -222,11 +222,12 @@ const Puzzle2 = () => {
             Puzzle 2 of 9
           </Badge>
           <h1 className="font-manor text-4xl font-bold text-foreground">
-            Reconstruct the Timeline
+            Reconstructing the Night
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto font-body">
-            The night of the murder was filled with chaos and confusion. Arrange the events 
-            in chronological order to narrow down the window of the crime.
+            The air is thick with protestations. Each guest recalls the evening in fragments, 
+            yet no two tales seem to agree. Piece together the true sequence of events 
+            as though you yourself had witnessed the crash, seen the lights sputter, and smelt the acrid smoke of the dying fire.
           </p>
         </motion.div>
 
@@ -239,10 +240,11 @@ const Puzzle2 = () => {
             <ManorCard className="max-w-2xl mx-auto border-primary/20 shadow-blood">
               <ManorCardContent className="text-center p-8">
                 <CheckCircle className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse-blood" />
-                <ManorCardTitle className="mb-4">Timeline Reconstructed!</ManorCardTitle>
+                <ManorCardTitle className="mb-4">The Night Reconstructed!</ManorCardTitle>
                 <ManorCardDescription className="mb-6">
-                  <strong className="text-primary">Clue Revealed:</strong> The murder occurred between 
-                  the loud crash from the library (8:20 PM) and the complete blackout (8:45 PM).
+                  <strong className="text-primary">Critical Clue:</strong> Lord Ashcroft was murdered between 
+                  the tremendous crash from his study and the blackout that followed. Someone is lying about 
+                  their whereabouts during these crucial moments.
                 </ManorCardDescription>
                 <ManorButton onClick={handleNextPuzzle} size="lg">
                   Investigate Suspect Alibis
@@ -398,7 +400,7 @@ const Puzzle2 = () => {
           className="text-center"
         >
           <p className="text-sm text-muted-foreground max-w-md mx-auto font-detective italic">
-            "The shadows whisper secrets, but only the keen-eyed detective can hear their truths..."
+            "But someone is lying. The storm masks their voices, but the order of events does not change..."
           </p>
         </motion.div>
       </div>

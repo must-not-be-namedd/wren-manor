@@ -72,7 +72,7 @@ const Puzzle1 = () => {
     loadProgress();
   }, [navigate]);
 
-  const scrambledLetters = ['R', 'G', 'A', 'D', 'G', 'E'];
+  const scrambledLetters = ['G', 'R', 'E', 'G', 'D', 'A'];
   const correctAnswer = 'DAGGER';
 
   const handleSubmit = async () => {
@@ -179,11 +179,12 @@ const Puzzle1 = () => {
             Puzzle 1 of 9
           </Badge>
           <h1 className="font-manor text-4xl font-bold text-foreground">
-            The Weapon Unveiled
+            The Murder Weapon
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto font-body">
-            A victim lies still in the grand parlor of Wren Manor. The killer's tool remains 
-            hidden among scattered clues. Unscramble the letters to reveal the murder weapon.
+            Lord Ashcroft lies motionless in his study, blood pooling beneath his still form. 
+            The weapon used in this heinous crime lies hidden among these scattered letters. 
+            Unscramble them to reveal the instrument of death.
           </p>
         </motion.div>
 
@@ -200,8 +201,8 @@ const Puzzle1 = () => {
               </div>
               <ManorCardTitle>Unscramble the Murder Weapon</ManorCardTitle>
               <ManorCardDescription>
-                The letters below spell out the weapon used in this heinous crime. 
-                Arrange them to reveal the truth.
+                These letters, found clutched in Lord Ashcroft's cold hand, spell the name of his killer's weapon. 
+                Arrange them to reveal the instrument of his demise.
               </ManorCardDescription>
             </ManorCardHeader>
             
@@ -242,32 +243,6 @@ const Puzzle1 = () => {
                 />
               </div>
 
-              {/* Hint Section */}
-              <div className="space-y-3">
-                <ManorButton
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowHint(!showHint)}
-                  className="w-full"
-                  disabled={progress?.p1}
-                >
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  {showHint ? 'Hide Hint' : 'Show Hint'}
-                </ManorButton>
-                
-                {showHint && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="p-4 bg-accent/10 border border-accent/20 rounded-lg"
-                  >
-                    <p className="text-sm text-muted-foreground text-center font-detective">
-                      💡 This weapon has a sharp blade and a handle, often used by assassins 
-                      and rogues throughout history. It rhymes with "stagger."
-                    </p>
-                  </motion.div>
-                )}
-              </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col space-y-3">
@@ -283,8 +258,8 @@ const Puzzle1 = () => {
                         Weapon Identified: {progress?.weapon}
                       </span>
                     </div>
-                    <ManorButton onClick={handleNextPuzzle} size="lg" className="w-full">
-                      Proceed to Timeline Reconstruction
+                     <ManorButton onClick={handleNextPuzzle} size="lg" className="w-full">
+                      Proceed to Reconstruct the Night
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </ManorButton>
                   </motion.div>
@@ -311,7 +286,7 @@ const Puzzle1 = () => {
           className="text-center"
         >
           <p className="text-sm text-muted-foreground max-w-md mx-auto font-detective italic">
-            "The shadows whisper secrets, but only the keen-eyed detective can hear their truths..."
+            "The storm masks their voices, but the order of events does not change..."
           </p>
         </motion.div>
       </div>

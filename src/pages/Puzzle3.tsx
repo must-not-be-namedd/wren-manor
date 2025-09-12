@@ -84,61 +84,61 @@ const Puzzle3 = () => {
 
   const suspectRiddles: SuspectRiddle[] = [
     { 
-      id: 'maid', 
-      riddle: 'I dust the shelves and make the beds, with nimble hands and quiet treads. Five letters spell my noble deed.', 
-      answer: 'ELEAN', 
-      revealedName: 'Eleanor (Maid)', 
-      avatar: 'E', 
-      color: 'bg-blue-500' 
-    },
-    { 
       id: 'butler', 
-      riddle: 'I serve with grace, in formal dress, eight letters name my faithfulness.', 
-      answer: 'REGINALD', 
-      revealedName: 'Reginald (Butler)', 
-      avatar: 'R', 
-      color: 'bg-green-500' 
+      riddle: '"I serve with grace in this grand estate, my loyalty never in doubt. Seven letters spell my name, and I care for silver throughout."', 
+      answer: 'BERNARD', 
+      revealedName: 'Bernard (The Butler)', 
+      avatar: 'B', 
+      color: 'bg-blue-600' 
     },
     { 
       id: 'chef', 
-      riddle: 'In kitchen\'s heat, with knife and flame, six letters form my culinary name.', 
-      answer: 'MARCEL', 
-      revealedName: 'Marcel (Chef)', 
+      riddle: '"In kitchen heat with blade in hand, I craft each meal by my command. Six letters form my culinary art, from dawn to dusk I play my part."', 
+      answer: 'CLAUDE', 
+      revealedName: 'Claude (The Chef)', 
+      avatar: 'C', 
+      color: 'bg-orange-600' 
+    },
+    { 
+      id: 'maid', 
+      riddle: '"I polish silver in dining hall, my voice was heard throughout it all. Seven letters spell my humble name, I dust and clean without shame."', 
+      answer: 'MILLICE', 
+      revealedName: 'Millicent (The Maid)', 
       avatar: 'M', 
-      color: 'bg-yellow-500' 
+      color: 'bg-pink-600' 
     },
     { 
-      id: 'guest1', 
-      riddle: 'A noble guest with regal bearing, eight letters spell my name so daring.', 
-      answer: 'VICTORIA', 
-      revealedName: 'Victoria (Guest)', 
-      avatar: 'V', 
-      color: 'bg-purple-500' 
+      id: 'doctor', 
+      riddle: '"I tend the sick with steady hand, eight letters help you understand. In study room I checked his health, concerned about his failing wealth."', 
+      answer: 'PEMBROKE', 
+      revealedName: 'Dr. Pembroke', 
+      avatar: 'P', 
+      color: 'bg-green-600' 
     },
     { 
-      id: 'guest2', 
-      riddle: 'A gentleman of wealth and station, eight letters mark my destination.', 
-      answer: 'HARRISON', 
-      revealedName: 'Harrison (Guest)', 
-      avatar: 'H', 
-      color: 'bg-red-500' 
+      id: 'lady', 
+      riddle: '"My husband\'s wife, in mourning dress, eight letters name my deep distress. I pray for patience, voice cut through the tension of our evening\'s feud."', 
+      answer: 'CORDELIA', 
+      revealedName: 'Lady Ashcroft', 
+      avatar: 'C', 
+      color: 'bg-purple-600' 
     }
   ];
 
   const initialTimeSlots: TimeSlot[] = [
-    { time: '7:45 PM', location: 'Entrance Hall', assignedSuspect: null },
+    { time: '7:30 PM', location: 'Dining Room', assignedSuspect: null },
     { time: '8:00 PM', location: 'Library', assignedSuspect: null },
-    { time: '8:15 PM', location: 'Garden', assignedSuspect: null },
-    { time: '8:20 PM', location: 'Kitchen', assignedSuspect: null },
-    { time: '8:30 PM', location: 'Parlor', assignedSuspect: null },
-    { time: '8:45 PM', location: 'Study', assignedSuspect: null }
+    { time: '8:15 PM', location: 'Kitchen', assignedSuspect: null },
+    { time: '8:30 PM', location: 'Study', assignedSuspect: null },
+    { time: '8:45 PM', location: 'Drawing Room', assignedSuspect: null },
+    { time: '9:00 PM', location: 'Garden Path', assignedSuspect: null }
   ];
 
-  // Correct solution: Eleanor at Library 8:00, Reginald in Garden 8:15, Marcel near Kitchen 8:20
+  // Correct solution based on witness statements from image
   const correctPlacements = {
-    'maid': '8:00 PM',
-    'butler': '8:15 PM',
-    'chef': '8:20 PM'
+    'maid': '8:00 PM',    // polishing silver in dining room
+    'chef': '8:15 PM',    // in kitchen after argument
+    'doctor': '8:30 PM'   // in study checking on Lord Ashcroft
   };
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(initialTimeSlots);
@@ -244,9 +244,9 @@ const Puzzle3 = () => {
   };
 
   const checkSolution = async () => {
-    // Check if all required suspects are revealed
-    const requiredSuspects = ['maid', 'butler', 'chef'];
-    const allRevealed = requiredSuspects.every(id => revealedSuspects.has(id));
+        // Check if all required suspects are revealed
+        const requiredSuspects = ['maid', 'chef', 'doctor'];
+        const allRevealed = requiredSuspects.every(id => revealedSuspects.has(id));
     
     if (!allRevealed) {
       toast({
@@ -276,11 +276,11 @@ const Puzzle3 = () => {
         
         await saveGameProgress(newProgress);
         setProgress(newProgress);
-        setClearedSuspects(['maid', 'butler']);
+        setClearedSuspects(['maid', 'doctor']);
         
         toast({
           title: "✅ Alibis Verified!",
-          description: "Eleanor and Reginald have been cleared. Proceeding to deduction phase...",
+          description: "Millicent and Dr. Pembroke have been cleared. The Chef remains the prime suspect...",
           duration: 3000,
         });
 
@@ -327,11 +327,12 @@ const Puzzle3 = () => {
             Puzzle 3 of 9
           </Badge>
           <h1 className="font-manor text-4xl font-bold text-foreground">
-            Unmask the Suspects
+            Suspect Alibis
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto font-body">
-            The suspects hide behind riddles and shadows. Solve each riddle to reveal their identity, 
-            then place them at their reported locations to verify their alibis.
+            The questioning begins. One by one, the guests provide their alibis. 
+            But who tells truth? Who clouds it with lies? Solve each riddle to unmask their identities, 
+            then verify their claims against the timeline of that fatal night.
           </p>
         </motion.div>
 
@@ -346,10 +347,10 @@ const Puzzle3 = () => {
                 <CheckCircle className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse-blood" />
                 <ManorCardTitle className="mb-4">Alibis Verified!</ManorCardTitle>
                 <ManorCardDescription className="mb-6">
-                  <strong className="text-primary">Eleanor (Maid)</strong> and{' '}
-                  <strong className="text-primary">Reginald (Butler)</strong> have been{' '}
+                  <strong className="text-primary">Millicent (The Maid)</strong> and{' '}
+                  <strong className="text-primary">Dr. Pembroke</strong> have been{' '}
                   <span className="text-green-500 font-semibold">cleared</span> of suspicion. 
-                  Their alibis place them away from the scene during the murder window.
+                  Their alibis place them away from Lord Ashcroft's study during the fatal moment.
                 </ManorCardDescription>
                 <ManorButton onClick={handleViewResults} size="lg">
                   View Investigation Results
@@ -374,18 +375,26 @@ const Puzzle3 = () => {
                   </ManorCardDescription>
                 </ManorCardHeader>
                 <ManorCardContent>
-                  <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
                     <div className="p-3 bg-background/50 rounded-lg">
-                      <p className="font-semibold text-foreground">📚 Library Sighting</p>
-                      <p className="text-muted-foreground">The maid was seen organizing books at 8:00 PM</p>
+                      <p className="font-semibold text-foreground">🥄 Maid's Statement</p>
+                      <p className="text-muted-foreground">"I was polishing the silver in the dining room," her voice brittle. "Odd, polishing in the midst of dinner?"</p>
                     </div>
                     <div className="p-3 bg-background/50 rounded-lg">
-                      <p className="font-semibold text-foreground">🌹 Garden Witness</p>
-                      <p className="text-muted-foreground">The butler was tending roses at 8:15 PM</p>
+                      <p className="font-semibold text-foreground">📚 Butler's Statement</p>
+                      <p className="text-muted-foreground">"I was in the library fetching linen," the Butler insists, twisting her apron. "Yet she recalls the crash—heard only from within the hall."</p>
                     </div>
                     <div className="p-3 bg-background/50 rounded-lg">
-                      <p className="font-semibold text-foreground">🍽️ Kitchen Activity</p>
-                      <p className="text-muted-foreground">The chef was preparing dessert at 8:20 PM</p>
+                      <p className="font-semibold text-foreground">🔪 Chef's Statement</p>
+                      <p className="text-muted-foreground">The Chef smashes a fist on the table. "I was in the kitchen! Ask any scullery boy. Dessert! Soufflé waits for no man, not even a dead one."</p>
+                    </div>
+                    <div className="p-3 bg-background/50 rounded-lg">
+                      <p className="font-semibold text-foreground">💉 Doctor's Statement</p>
+                      <p className="text-muted-foreground">The Doctor strokes his beard. "I was in the study, going over Lord Ashcroft's records. His health... was not strong."</p>
+                    </div>
+                    <div className="p-3 bg-background/50 rounded-lg">
+                      <p className="font-semibold text-foreground">👑 Lady Ashcroft's Statement</p>
+                      <p className="text-muted-foreground">Lady Ashcroft's voice cuts through the tension: "I was alone in the drawing room, praying for patience. My husband had been drinking again."</p>
                     </div>
                   </div>
                 </ManorCardContent>
@@ -601,7 +610,7 @@ const Puzzle3 = () => {
           className="text-center"
         >
           <p className="text-sm text-muted-foreground max-w-md mx-auto font-body italic">
-            "Behind every mask lies truth waiting to be unveiled..."
+            "Who tells truth? Who clouds it with lies? The hour grows late, but the alibis sharpen the focus..."
           </p>
         </motion.div>
       </div>
