@@ -36,6 +36,16 @@ export const getGameProgress = async (playerName: string, teamId: string): Promi
       return getDefaultProgress();
     }
 
+    // Set session variables for RLS policies
+    await supabase.rpc('set_config', { 
+      setting_name: 'app.current_player', 
+      setting_value: playerName 
+    });
+    await supabase.rpc('set_config', { 
+      setting_name: 'app.current_team', 
+      setting_value: teamId 
+    });
+
     const { data, error } = await supabase
       .from('game_progress')
       .select('*')
@@ -105,6 +115,16 @@ export const saveGameProgress = async (progress: GameProgress): Promise<void> =>
   try {
     console.log('Saving game progress:', progress);
     
+    // Set session variables for RLS policies
+    await supabase.rpc('set_config', { 
+      setting_name: 'app.current_player', 
+      setting_value: progress.playerName 
+    });
+    await supabase.rpc('set_config', { 
+      setting_name: 'app.current_team', 
+      setting_value: progress.teamId 
+    });
+    
     const gameData = {
       player_name: progress.playerName,
       team_id: progress.teamId,
@@ -171,6 +191,16 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
 
 const updateLeaderboard = async (progress: GameProgress): Promise<void> => {
   try {
+    // Set session variables for RLS policies
+    await supabase.rpc('set_config', { 
+      setting_name: 'app.current_player', 
+      setting_value: progress.playerName 
+    });
+    await supabase.rpc('set_config', { 
+      setting_name: 'app.current_team', 
+      setting_value: progress.teamId 
+    });
+    
     const currentProgress = [progress.p1, progress.p2, progress.p3, progress.p4, progress.p5, progress.p6, progress.p7, progress.p8, progress.p9].filter(Boolean).length;
     
     const leaderboardData = {
@@ -198,6 +228,16 @@ const updateLeaderboard = async (progress: GameProgress): Promise<void> => {
 export const resetGameProgress = async (playerName: string, teamId: string): Promise<void> => {
   try {
     if (!playerName || !teamId) return;
+    
+    // Set session variables for RLS policies
+    await supabase.rpc('set_config', { 
+      setting_name: 'app.current_player', 
+      setting_value: playerName 
+    });
+    await supabase.rpc('set_config', { 
+      setting_name: 'app.current_team', 
+      setting_value: teamId 
+    });
     
     const { error } = await supabase
       .from('game_progress')
