@@ -24,11 +24,7 @@ const Puzzle6 = () => {
   const database = {
     TRANSACTIONS: [
       { ID: '01', NAME: 'Chef', AMOUNT: 12000, DATE: '2025-09-01' },
-      { ID: '02', NAME: 'Maid', AMOUNT: 5000, DATE: '2025-09-01' },{
-        ID:'03',NAME: 'Lady Ashcroft', AMOUNT: 1000, DATE: '2025-09-01'
-      },{
-        ID:'04',NAME: 'DOCTOR', AMOUNT: 7500, DATE: '2025-09-01'
-      },
+      { ID: '02', NAME: 'Maid', AMOUNT: 5000, DATE: '2025-09-01' }
     ]
   };
 
@@ -196,7 +192,7 @@ const Puzzle6 = () => {
                 id="query"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="SELECT * FROM TRANSACTIONS WHERE..."
+                placeholder="Write Your Query Here...."
                 className="font-mono"
                 onKeyDown={(e) => e.key === 'Enter' && executeQuery()}
               />
