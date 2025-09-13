@@ -78,15 +78,17 @@ export const PhoneKeypad = ({
           {numbers.map((row, rowIndex) => (
             <div key={rowIndex} className="flex justify-center space-x-2">
               {row.map((number) => (
-                <motion.div key={number}>
+                <motion.div 
+                  key={number}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <ManorButton
                     variant="outline"
                     size="lg"
                     className="w-16 h-16 text-lg font-mono"
                     onClick={() => handleNumberClick(number)}
                     disabled={pin.length >= maxLength && !['*', '#'].includes(number)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                   >
                     {number}
                   </ManorButton>
