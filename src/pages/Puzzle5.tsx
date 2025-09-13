@@ -270,7 +270,7 @@ const Puzzle5 = () => {
             
             <div className="text-center pt-4">
               <ManorButton onClick={handleSubmit} disabled={selectedContradictions.length < 3}>
-                Expose the Lies ({selectedContradictions.length}/5 selected)
+                Expose the Lies
               </ManorButton>
             </div>
           </ManorCardContent>
