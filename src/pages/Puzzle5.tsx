@@ -42,10 +42,40 @@ const Puzzle5 = () => {
       suspect: 'Lady Victoria (Guest)',
       statement: '"I saw Marcel in the garden around 8:20 PM. He was washing something at the fountain."',
       category: 'witness'
+    },
+    {
+      id: 'doctor-study',
+      suspect: 'Dr. Pembroke',
+      statement: '"I was examining Lord Ashcroft in his study from 8:00 to 8:30 PM. He was alive when I left."',
+      category: 'alibi'
+    },
+    {
+      id: 'lady-drawing',
+      suspect: 'Lady Ashcroft',
+      statement: '"I heard my husband arguing with someone in his study at 8:25 PM."',
+      category: 'witness'
+    },
+    {
+      id: 'butler-keys',
+      suspect: 'Charles (Butler)',
+      statement: '"I locked all the doors at 8:00 PM as usual. No one could enter or leave after that."',
+      category: 'security'
+    },
+    {
+      id: 'maid-cleaning',
+      suspect: 'Margaret (Maid)',
+      statement: '"I saw Lady Victoria enter through the garden door at 8:30 PM, soaking wet from the rain."',
+      category: 'witness'
     }
   ];
 
-  const correctContradictions = ['butler-time|maid-sight', 'chef-kitchen|guest-chef'];
+  const correctContradictions = [
+    'butler-time|maid-sight',
+    'chef-kitchen|guest-chef', 
+    'doctor-study|lady-drawing',
+    'butler-keys|maid-cleaning',
+    'butler-time|butler-keys'
+  ];
 
   // Load game progress
   useEffect(() => {
@@ -113,7 +143,7 @@ const Puzzle5 = () => {
   const handleSubmit = async () => {
     const found = selectedContradictions.filter(c => correctContradictions.includes(c));
     
-    if (found.length >= 2) {
+    if (found.length >= 3) {
       const newProgress = { ...progress, p5: true, currentPage: 5 };
       await saveGameProgress(newProgress);
       setProgress(newProgress);
@@ -138,7 +168,7 @@ const Puzzle5 = () => {
     } else {
       toast({
         title: "Insufficient Evidence",
-        description: "You need to identify more contradictions to expose the lies.",
+        description: `You need to identify at least 3 contradictions to expose the lies. Found: ${found.length}/3`,
         variant: "destructive",
       });
     }
@@ -224,14 +254,23 @@ const Puzzle5 = () => {
                     {contradiction === 'chef-kitchen|guest-chef' && 
                       "Chef claims never left kitchen, but was seen in garden at 8:20"
                     }
+                    {contradiction === 'doctor-study|lady-drawing' && 
+                      "Doctor says Lord Ashcroft was alive when he left at 8:30, but Lady heard arguing at 8:25"
+                    }
+                    {contradiction === 'butler-keys|maid-cleaning' && 
+                      "Butler locked all doors at 8:00, but maid saw Lady Victoria enter at 8:30"
+                    }
+                    {contradiction === 'butler-time|butler-keys' && 
+                      "Butler claims lights out at 8:10 but also says he locked doors at 8:00 (inconsistent timeline)"
+                    }
                   </div>
                 </div>
               ))}
             </div>
             
             <div className="text-center pt-4">
-              <ManorButton onClick={handleSubmit} disabled={selectedContradictions.length < 2}>
-                Expose the Lies
+              <ManorButton onClick={handleSubmit} disabled={selectedContradictions.length < 3}>
+                Expose the Lies ({selectedContradictions.length}/5 selected)
               </ManorButton>
             </div>
           </ManorCardContent>
