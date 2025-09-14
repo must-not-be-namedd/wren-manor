@@ -1,20 +1,44 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/Layout';
-import { ManorCard, ManorCardContent, ManorCardDescription, ManorCardHeader, ManorCardTitle } from '@/components/ui/manor-card';
-import { ManorButton } from '@/components/ui/manor-button';
-import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Clock, Users, Crown, ArrowLeft, RefreshCw, Wifi, WifiOff } from 'lucide-react';
-import { getLeaderboard, getGameProgress, type LeaderboardEntry, type GameProgress } from '@/lib/gameState';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Layout } from "@/components/Layout";
+import {
+  ManorCard,
+  ManorCardContent,
+  ManorCardDescription,
+  ManorCardHeader,
+  ManorCardTitle,
+} from "@/components/ui/manor-card";
+import { ManorButton } from "@/components/ui/manor-button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Trophy,
+  Medal,
+  Clock,
+  Users,
+  Crown,
+  ArrowLeft,
+  RefreshCw,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
+import {
+  getLeaderboard,
+  getGameProgress,
+  subscribeToLeaderboard,
+  subscribeToGameProgress,
+  type LeaderboardEntry,
+  type GameProgress,
+} from "@/integrations/firebase/gameState";
+import { useToast } from "@/hooks/use-toast";
 
 const Leaderboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [currentProgress, setCurrentProgress] = useState<GameProgress | null>(null);
+  const [currentProgress, setCurrentProgress] = useState<GameProgress | null>(
+    null
+  );
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
@@ -24,7 +48,7 @@ const Leaderboard = () => {
       const data = await getLeaderboard();
       setLeaderboard(data);
     } catch (error) {
-      console.error('Error loading leaderboard:', error);
+      console.error("Error loading leaderboard:", error);
       setLeaderboard([]);
     }
   };
@@ -32,16 +56,16 @@ const Leaderboard = () => {
   const loadCurrentProgress = async () => {
     try {
       // Get stored player data if available
-      const stored = localStorage.getItem('wren-manor-player');
-      let storedPlayerName = '';
-      let storedTeamId = '';
-      
+      const stored = localStorage.getItem("wren-manor-player");
+      let storedPlayerName = "";
+      let storedTeamId = "";
+
       if (stored) {
         const playerData = JSON.parse(stored);
-        storedPlayerName = playerData.playerName || '';
-        storedTeamId = playerData.teamId || '';
+        storedPlayerName = playerData.playerName || "";
+        storedTeamId = playerData.teamId || "";
       }
-      
+
       if (storedPlayerName && storedTeamId) {
         const progress = await getGameProgress(storedPlayerName, storedTeamId);
         setCurrentProgress(progress);
@@ -49,7 +73,7 @@ const Leaderboard = () => {
         setCurrentProgress(null);
       }
     } catch (error) {
-      console.error('Error loading current progress:', error);
+      console.error("Error loading current progress:", error);
       setCurrentProgress(null);
     }
   };
@@ -62,75 +86,101 @@ const Leaderboard = () => {
     };
     loadData();
 
-    // Set up real-time subscription for leaderboard updates
-    console.log('Setting up real-time subscription for leaderboard...');
-    const channel = supabase
-      .channel('leaderboard-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'leaderboard'
-        },
-        (payload) => {
-          console.log('Leaderboard real-time update received:', payload);
-          // Show toast notification for leaderboard updates
-          if (payload.eventType === 'INSERT') {
-            toast({
-              title: "🔥 New Investigator!",
-              description: "Another detective has joined the hunt at Wren Manor.",
-              duration: 3000,
-            });
-          } else if (payload.eventType === 'UPDATE') {
-            toast({
-              title: "📈 Leaderboard Updated!",
-              description: "An investigator has made progress.",
-              duration: 2000,
-            });
-          }
-          // Refresh the leaderboard data when changes occur
-          loadLeaderboard();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all events for game progress changes
-          schema: 'public',
-          table: 'game_progress'
-        },
-        (payload) => {
-          console.log('Game progress real-time update received:', payload);
-          // Refresh both leaderboard and current progress
-          loadLeaderboard();
-          loadCurrentProgress();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Real-time subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          setIsRealTimeConnected(true);
-          console.log('✅ Real-time leaderboard updates are now active!');
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-          setIsRealTimeConnected(false);
-          console.log('❌ Real-time connection failed or disconnected');
-        }
-      });
+    // Set up Firebase real-time listeners
+    console.log("Setting up Firebase real-time listeners for leaderboard...");
+    console.log("Firebase config check:", {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? "✅ Set" : "❌ Not set",
+      databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL
+        ? "✅ Set"
+        : "❌ Not set",
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID
+        ? "✅ Set"
+        : "❌ Not set",
+    });
 
-    // Cleanup subscription on component unmount
+    // Track previous leaderboard state to detect changes
+    let previousLeaderboard: LeaderboardEntry[] = [];
+
+    // Subscribe to leaderboard changes
+    const unsubscribeLeaderboard = subscribeToLeaderboard((newLeaderboard) => {
+      console.log("🔴 Firebase leaderboard update received:", newLeaderboard);
+
+      // Check for new players or progress updates
+      if (previousLeaderboard.length > 0) {
+        const newPlayers = newLeaderboard.filter(
+          (player) => !previousLeaderboard.find((prev) => prev.id === player.id)
+        );
+
+        const updatedPlayers = newLeaderboard.filter((player) => {
+          const prev = previousLeaderboard.find((p) => p.id === player.id);
+          return (
+            prev &&
+            (prev.completedPuzzles !== player.completedPuzzles ||
+              prev.isComplete !== player.isComplete)
+          );
+        });
+
+        // Show notifications for changes
+        if (newPlayers.length > 0) {
+          toast({
+            title: "🔥 New Investigator!",
+            description: `${newPlayers[0].playerName} has joined the hunt at Wren Manor.`,
+            duration: 3000,
+          });
+        }
+
+        if (updatedPlayers.length > 0) {
+          toast({
+            title: "📈 Leaderboard Updated!",
+            description: `${updatedPlayers[0].playerName} has made progress.`,
+            duration: 2000,
+          });
+        }
+      }
+
+      previousLeaderboard = [...newLeaderboard];
+      setLeaderboard(newLeaderboard);
+      setIsRealTimeConnected(true);
+    });
+
+    // Subscribe to current player's progress if available
+    let unsubscribeProgress: (() => void) | null = null;
+    const stored = localStorage.getItem("wren-manor-player");
+    if (stored) {
+      const playerData = JSON.parse(stored);
+      const playerName = playerData.playerName || "";
+      const teamId = playerData.teamId || "";
+
+      if (playerName && teamId) {
+        unsubscribeProgress = subscribeToGameProgress(
+          playerName,
+          teamId,
+          (progress) => {
+            console.log("Firebase game progress update received:", progress);
+            setCurrentProgress(progress);
+          }
+        );
+      }
+    }
+
+    console.log("✅ Firebase real-time leaderboard updates are now active!");
+
+    // Cleanup listeners on component unmount
     return () => {
-      console.log('Cleaning up real-time subscription...');
-      supabase.removeChannel(channel);
+      console.log("Cleaning up Firebase real-time listeners...");
+      unsubscribeLeaderboard();
+      if (unsubscribeProgress) {
+        unsubscribeProgress();
+      }
     };
-  }, []);
+  }, [toast]);
 
   const refreshLeaderboard = async () => {
     setIsRefreshing(true);
     try {
       await loadLeaderboard();
     } catch (error) {
-      console.error('Error refreshing leaderboard:', error);
+      console.error("Error refreshing leaderboard:", error);
     } finally {
       setTimeout(() => {
         setIsRefreshing(false);
@@ -139,31 +189,74 @@ const Leaderboard = () => {
   };
 
   const formatTime = (milliseconds: number) => {
-    if (milliseconds === 0) return 'In Progress';
+    if (milliseconds === 0) return "In Progress";
     const minutes = Math.floor(milliseconds / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
     return `${minutes}m ${seconds}s`;
   };
 
   const getProgressBadge = (progress: number) => {
-    if (progress === 9) return { text: 'Master Detective', variant: 'default' as const, color: 'text-green-500', icon: '🏆' };
-    if (progress >= 7) return { text: 'Expert', variant: 'secondary' as const, color: 'text-blue-500', icon: '🕵️' };
-    if (progress >= 5) return { text: 'Advanced', variant: 'secondary' as const, color: 'text-purple-500', icon: '🎯' };
-    if (progress >= 3) return { text: 'Intermediate', variant: 'outline' as const, color: 'text-yellow-500', icon: '🔍' };
-    if (progress >= 1) return { text: 'Beginner', variant: 'outline' as const, color: 'text-orange-500', icon: '🔰' };
-    return { text: 'Starting', variant: 'outline' as const, color: 'text-muted-foreground', icon: '🚪' };
+    if (progress === 9)
+      return {
+        text: "Master Detective",
+        variant: "default" as const,
+        color: "text-green-500",
+        icon: "🏆",
+      };
+    if (progress >= 7)
+      return {
+        text: "Expert",
+        variant: "secondary" as const,
+        color: "text-blue-500",
+        icon: "🕵️",
+      };
+    if (progress >= 5)
+      return {
+        text: "Advanced",
+        variant: "secondary" as const,
+        color: "text-purple-500",
+        icon: "🎯",
+      };
+    if (progress >= 3)
+      return {
+        text: "Intermediate",
+        variant: "outline" as const,
+        color: "text-yellow-500",
+        icon: "🔍",
+      };
+    if (progress >= 1)
+      return {
+        text: "Beginner",
+        variant: "outline" as const,
+        color: "text-orange-500",
+        icon: "🔰",
+      };
+    return {
+      text: "Starting",
+      variant: "outline" as const,
+      color: "text-muted-foreground",
+      icon: "🚪",
+    };
   };
 
   const getRankIcon = (index: number) => {
-    if (index === 0) return <Crown className="h-6 w-6 text-accent animate-glow" />;
+    if (index === 0)
+      return <Crown className="h-6 w-6 text-accent animate-glow" />;
     if (index === 1) return <Medal className="h-6 w-6 text-yellow-500" />;
     if (index === 2) return <Medal className="h-6 w-6 text-orange-500" />;
-    return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold text-muted-foreground">#{index + 1}</span>;
+    return (
+      <span className="w-6 h-6 flex items-center justify-center text-sm font-bold text-muted-foreground">
+        #{index + 1}
+      </span>
+    );
   };
 
   const isCurrentPlayer = (entry: LeaderboardEntry) => {
     if (!currentProgress) return false;
-    return entry.playerName === currentProgress.playerName && entry.teamId === currentProgress.teamId;
+    return (
+      entry.playerName === currentProgress.playerName &&
+      entry.teamId === currentProgress.teamId
+    );
   };
 
   if (isLoading) {
@@ -171,7 +264,9 @@ const Leaderboard = () => {
       <Layout>
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center">
-            <div className="animate-pulse font-body">Loading leaderboard...</div>
+            <div className="animate-pulse font-body">
+              Loading leaderboard...
+            </div>
           </div>
         </div>
       </Layout>
@@ -182,7 +277,7 @@ const Leaderboard = () => {
     <Layout>
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="text-center space-y-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -191,13 +286,14 @@ const Leaderboard = () => {
           <div className="flex justify-center items-center space-x-4 mb-6">
             <Trophy className="h-12 w-12 text-accent animate-glow" />
           </div>
-          
+
           <h1 className="font-mystery text-4xl md:text-5xl font-bold text-foreground">
             Investigation Leaderboard
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto font-body">
-            Track the progress of all investigators attempting to solve the mystery at Wren Manor. 
-            Rankings are based on progress completed and total completion time.
+            Track the progress of all investigators attempting to solve the
+            mystery at Wren Manor. Rankings are based on progress completed and
+            total completion time.
           </p>
         </motion.div>
 
@@ -208,10 +304,7 @@ const Leaderboard = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="flex justify-between items-center"
         >
-          <ManorButton
-            variant="secondary"
-            onClick={() => navigate('/')}
-          >
+          <ManorButton variant="secondary" onClick={() => navigate("/")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </ManorButton>
@@ -222,12 +315,16 @@ const Leaderboard = () => {
               {isRealTimeConnected ? (
                 <>
                   <Wifi className="h-4 w-4 text-green-500 animate-pulse" />
-                  <span className="text-green-500 font-medium">Live Updates</span>
+                  <span className="text-green-500 font-medium">
+                    Live Updates
+                  </span>
                 </>
               ) : (
                 <>
                   <WifiOff className="h-4 w-4 text-yellow-500" />
-                  <span className="text-yellow-500 font-medium">Connecting...</span>
+                  <span className="text-yellow-500 font-medium">
+                    Connecting...
+                  </span>
                 </>
               )}
             </div>
@@ -237,8 +334,10 @@ const Leaderboard = () => {
               onClick={refreshLeaderboard}
               disabled={isRefreshing}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              {isRefreshing ? "Refreshing..." : "Refresh"}
             </ManorButton>
           </div>
         </motion.div>
@@ -253,8 +352,12 @@ const Leaderboard = () => {
             <ManorCard className="text-center hover-scale">
               <ManorCardContent className="p-4">
                 <Users className="h-8 w-8 text-primary mx-auto mb-2 animate-pulse" />
-                <div className="text-2xl font-bold text-foreground">{leaderboard.length}</div>
-                <div className="text-sm text-muted-foreground">Total Investigators</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {leaderboard.length}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Total Investigators
+                </div>
               </ManorCardContent>
             </ManorCard>
 
@@ -262,9 +365,14 @@ const Leaderboard = () => {
               <ManorCardContent className="p-4">
                 <Trophy className="h-8 w-8 text-accent mx-auto mb-2 animate-glow" />
                 <div className="text-2xl font-bold text-foreground">
-                  {leaderboard.filter(entry => entry.currentProgress === 9).length}
+                  {
+                    leaderboard.filter((entry) => entry.completedPuzzles === 9)
+                      .length
+                  }
                 </div>
-                <div className="text-sm text-muted-foreground">Cases Solved</div>
+                <div className="text-sm text-muted-foreground">
+                  Cases Solved
+                </div>
               </ManorCardContent>
             </ManorCard>
 
@@ -272,10 +380,9 @@ const Leaderboard = () => {
               <ManorCardContent className="p-4">
                 <Clock className="h-8 w-8 text-accent mx-auto mb-2" />
                 <div className="text-2xl font-bold text-foreground">
-                  {leaderboard.length > 0 && leaderboard[0].completionTime 
-                    ? formatTime(leaderboard[0].completionTime)
-                    : 'N/A'
-                  }
+                  {leaderboard.length > 0 && leaderboard[0].totalTime > 0
+                    ? formatTime(leaderboard[0].totalTime)
+                    : "N/A"}
                 </div>
                 <div className="text-sm text-muted-foreground">Best Time</div>
               </ManorCardContent>
@@ -299,58 +406,82 @@ const Leaderboard = () => {
                 Investigators ranked by progress and completion time
               </ManorCardDescription>
             </ManorCardHeader>
-            
+
             <ManorCardContent className="p-0">
               {leaderboard.length === 0 ? (
                 <div className="text-center py-12">
                   <Trophy className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
                   <p className="text-muted-foreground font-body">
-                    No investigators have started their journey yet. Be the first to enter Wren Manor!
+                    No investigators have started their journey yet. Be the
+                    first to enter Wren Manor!
                   </p>
                 </div>
               ) : (
                 <div className="space-y-2 p-6">
                   {leaderboard.map((entry, index) => {
-                    const progressBadge = getProgressBadge(entry.currentProgress);
+                    const progressBadge = getProgressBadge(
+                      entry.completedPuzzles
+                    );
                     const isCurrentUser = isCurrentPlayer(entry);
-                    const progressPercentage = (entry.currentProgress / 9) * 100;
-                    
+                    const progressPercentage =
+                      (entry.completedPuzzles / 9) * 100;
+
                     return (
                       <motion.div
                         key={`${entry.playerName}-${entry.teamId}-${entry.timestamp}`}
                         className={`relative overflow-hidden rounded-lg border transition-all duration-300 ${
-                          isCurrentUser 
-                            ? 'bg-gradient-blood/10 border-primary/30 shadow-blood ring-2 ring-primary/20' 
-                            : 'bg-card/30 border-border hover:bg-card/50 hover:border-primary/20'
+                          isCurrentUser
+                            ? "bg-gradient-blood/10 border-primary/30 shadow-blood ring-2 ring-primary/20"
+                            : "bg-card/30 border-border hover:bg-card/50 hover:border-primary/20"
                         }`}
                         initial={{ opacity: 0, x: -20, scale: 0.95 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
-                        transition={{ delay: index * 0.1, duration: 0.4, type: "spring" }}
+                        transition={{
+                          delay: index * 0.1,
+                          duration: 0.4,
+                          type: "spring",
+                        }}
                         whileHover={{ scale: 1.02, y: -2 }}
                       >
                         {/* Progress Bar Background */}
-                        <div 
-                          className={`absolute inset-0 ${isCurrentUser ? 'bg-primary/5' : 'bg-accent/3'}`}
-                          style={{ 
-                            background: `linear-gradient(to right, ${isCurrentUser ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--accent) / 0.05)'} ${progressPercentage}%, transparent ${progressPercentage}%)`
+                        <div
+                          className={`absolute inset-0 ${
+                            isCurrentUser ? "bg-primary/5" : "bg-accent/3"
+                          }`}
+                          style={{
+                            background: `linear-gradient(to right, ${
+                              isCurrentUser
+                                ? "hsl(var(--primary) / 0.1)"
+                                : "hsl(var(--accent) / 0.05)"
+                            } ${progressPercentage}%, transparent ${progressPercentage}%)`,
                           }}
                         />
-                        
+
                         <div className="relative flex items-center justify-between p-4">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center justify-center w-12">
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                transition={{ delay: index * 0.1 + 0.2, type: "spring", stiffness: 200 }}
+                                transition={{
+                                  delay: index * 0.1 + 0.2,
+                                  type: "spring",
+                                  stiffness: 200,
+                                }}
                               >
                                 {getRankIcon(index)}
                               </motion.div>
                             </div>
-                            
+
                             <div className="flex-1">
                               <div className="flex items-center space-x-2">
-                                <h3 className={`font-detective font-semibold ${isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
+                                <h3
+                                  className={`font-detective font-semibold ${
+                                    isCurrentUser
+                                      ? "text-primary"
+                                      : "text-foreground"
+                                  }`}
+                                >
                                   {entry.playerName}
                                 </h3>
                                 {isCurrentUser && (
@@ -359,7 +490,10 @@ const Leaderboard = () => {
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.5, type: "spring" }}
                                   >
-                                    <Badge variant="outline" className="text-xs px-2 py-0 text-primary border-primary/30 animate-pulse">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs px-2 py-0 text-primary border-primary/30 animate-pulse"
+                                    >
                                       You
                                     </Badge>
                                   </motion.div>
@@ -367,10 +501,18 @@ const Leaderboard = () => {
                                 {index < 3 && (
                                   <motion.div
                                     animate={{ rotate: [0, 10, -10, 0] }}
-                                    transition={{ duration: 2, repeat: Infinity, delay: index }}
+                                    transition={{
+                                      duration: 2,
+                                      repeat: Infinity,
+                                      delay: index,
+                                    }}
                                   >
                                     <span className="text-lg">
-                                      {index === 0 ? '👑' : index === 1 ? '🥈' : '🥉'}
+                                      {index === 0
+                                        ? "👑"
+                                        : index === 1
+                                        ? "🥈"
+                                        : "🥉"}
                                     </span>
                                   </motion.div>
                                 )}
@@ -379,12 +521,15 @@ const Leaderboard = () => {
                                 <span className="text-sm text-muted-foreground font-detective">
                                   Team: {entry.teamId}
                                 </span>
-                                <Badge variant={progressBadge.variant} className={`text-xs ${progressBadge.color} flex items-center space-x-1`}>
+                                <Badge
+                                  variant={progressBadge.variant}
+                                  className={`text-xs ${progressBadge.color} flex items-center space-x-1`}
+                                >
                                   <span>{progressBadge.icon}</span>
                                   <span>{progressBadge.text}</span>
                                 </Badge>
                               </div>
-                              
+
                               {/* Progress Bar */}
                               <div className="mt-2">
                                 <div className="flex justify-between text-xs text-muted-foreground mb-1">
@@ -392,11 +537,21 @@ const Leaderboard = () => {
                                   <span>{entry.currentProgress}/9</span>
                                 </div>
                                 <div className="w-full bg-muted/30 rounded-full h-2">
-                                  <motion.div 
-                                    className={`h-2 rounded-full ${isCurrentUser ? 'bg-gradient-blood' : 'bg-gradient-candlelight'}`}
+                                  <motion.div
+                                    className={`h-2 rounded-full ${
+                                      isCurrentUser
+                                        ? "bg-gradient-blood"
+                                        : "bg-gradient-candlelight"
+                                    }`}
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${progressPercentage}%` }}
-                                    transition={{ delay: index * 0.1 + 0.5, duration: 0.8, ease: "easeOut" }}
+                                    animate={{
+                                      width: `${progressPercentage}%`,
+                                    }}
+                                    transition={{
+                                      delay: index * 0.1 + 0.5,
+                                      duration: 0.8,
+                                      ease: "easeOut",
+                                    }}
                                   />
                                 </div>
                               </div>
@@ -404,7 +559,7 @@ const Leaderboard = () => {
                           </div>
 
                           <div className="text-right space-y-1">
-                            <motion.div 
+                            <motion.div
                               className="text-sm font-medium text-foreground"
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
@@ -419,7 +574,10 @@ const Leaderboard = () => {
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                transition={{ delay: index * 0.1 + 0.6, type: "spring" }}
+                                transition={{
+                                  delay: index * 0.1 + 0.6,
+                                  type: "spring",
+                                }}
                               >
                                 <Badge className="bg-green-500 text-white text-xs animate-pulse">
                                   🎉 Solved!
@@ -461,26 +619,28 @@ const Leaderboard = () => {
                     <motion.div
                       key={`spotlight-${entry.playerName}-${entry.teamId}`}
                       className={`text-center p-4 rounded-lg border-2 ${
-                        index === 0 ? 'border-yellow-500/30 bg-yellow-500/5' :
-                        index === 1 ? 'border-gray-400/30 bg-gray-400/5' :
-                        'border-orange-500/30 bg-orange-500/5'
+                        index === 0
+                          ? "border-yellow-500/30 bg-yellow-500/5"
+                          : index === 1
+                          ? "border-gray-400/30 bg-gray-400/5"
+                          : "border-orange-500/30 bg-orange-500/5"
                       }`}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.6 + index * 0.1, type: "spring" }}
                     >
-                      <motion.div 
+                      <motion.div
                         className="text-4xl mb-2"
-                        animate={{ 
+                        animate={{
                           scale: index === 0 ? [1, 1.1, 1] : 1,
-                          rotate: index === 0 ? [0, 5, -5, 0] : 0
+                          rotate: index === 0 ? [0, 5, -5, 0] : 0,
                         }}
-                        transition={{ 
+                        transition={{
                           duration: index === 0 ? 2 : 0,
-                          repeat: index === 0 ? Infinity : 0
+                          repeat: index === 0 ? Infinity : 0,
                         }}
                       >
-                        {index === 0 ? '👑' : index === 1 ? '🥈' : '🥉'}
+                        {index === 0 ? "👑" : index === 1 ? "🥈" : "🥉"}
                       </motion.div>
                       <h4 className="font-detective font-bold text-foreground mb-1">
                         {entry.playerName}
@@ -488,10 +648,15 @@ const Leaderboard = () => {
                       <div className="text-sm text-muted-foreground mb-2">
                         Team: {entry.teamId}
                       </div>
-                      <div className={`text-lg font-bold mb-1 ${
-                        index === 0 ? 'text-yellow-500' :
-                        index === 1 ? 'text-gray-400' : 'text-orange-500'
-                      }`}>
+                      <div
+                        className={`text-lg font-bold mb-1 ${
+                          index === 0
+                            ? "text-yellow-500"
+                            : index === 1
+                            ? "text-gray-400"
+                            : "text-orange-500"
+                        }`}
+                      >
                         {entry.currentProgress}/9
                       </div>
                       <div className="text-xs text-muted-foreground">
@@ -520,9 +685,13 @@ const Leaderboard = () => {
                   Continue Your Investigation
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4 font-body">
-                  Return to Wren Manor and climb the leaderboard by solving more puzzles.
+                  Return to Wren Manor and climb the leaderboard by solving more
+                  puzzles.
                 </p>
-                <ManorButton onClick={() => navigate('/')} variant="candlelight">
+                <ManorButton
+                  onClick={() => navigate("/")}
+                  variant="candlelight"
+                >
                   Return to Manor
                 </ManorButton>
               </ManorCardContent>
@@ -539,7 +708,8 @@ const Leaderboard = () => {
         >
           <div className="w-24 h-0.5 bg-gradient-blood mx-auto mb-4" />
           <p className="text-xs text-muted-foreground font-body italic">
-            "In the game of mystery, every second counts, and every clue matters..."
+            "In the game of mystery, every second counts, and every clue
+            matters..."
           </p>
         </motion.div>
       </div>

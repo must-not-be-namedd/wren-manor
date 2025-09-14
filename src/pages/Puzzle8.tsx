@@ -63,7 +63,7 @@ const Puzzle8 = () => {
 
         console.log(`Loading progress for ${playerName} (Team: ${teamId})`);
         const gameProgress = await getGameProgress(playerName, teamId);
-        console.log("Loaded game progress from Supabase:", gameProgress);
+        console.log("Loaded game progress from Firebase:", gameProgress);
         setProgress(gameProgress);
 
         // Check if previous puzzles are incomplete

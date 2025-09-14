@@ -1,87 +1,61 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Trophy, Clock, Users } from 'lucide-react';
-import { ManorCard, ManorCardContent, ManorCardHeader, ManorCardTitle } from '@/components/ui/manor-card';
-import { Badge } from '@/components/ui/badge';
-
-interface TeamScore {
-  teamId: string;
-  teamName: string;
-  completionTime: number; // in milliseconds
-  puzzlesCompleted: number;
-  lastUpdated: number;
-}
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Trophy, Clock, Users } from "lucide-react";
+import {
+  ManorCard,
+  ManorCardContent,
+  ManorCardHeader,
+  ManorCardTitle,
+} from "@/components/ui/manor-card";
+import { Badge } from "@/components/ui/badge";
+import {
+  subscribeToLeaderboard,
+  type LeaderboardEntry,
+} from "@/integrations/firebase/gameState";
 
 export const LeaderboardWidget = () => {
-  const [topTeams, setTopTeams] = useState<TeamScore[]>([]);
+  const [topTeams, setTopTeams] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadLeaderboard = async () => {
-      try {
-        setIsLoading(true);
-        // Get all team progress from localStorage
-        const allProgress = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && key.startsWith('wren-manor-progress-')) {
-            try {
-              const progress = JSON.parse(localStorage.getItem(key) || '{}');
-              if (progress.teamId && progress.playerName) {
-                const completedPuzzles = [
-                  progress.p1, progress.p2, progress.p3, progress.p4, 
-                  progress.p5, progress.p6, progress.p7, progress.p8, progress.p9
-                ].filter(Boolean).length;
+    console.log("🎯 LeaderboardWidget: Setting up Firebase subscription");
 
-                if (completedPuzzles > 0) {
-                  allProgress.push({
-                    teamId: progress.teamId,
-                    teamName: progress.playerName,
-                    completionTime: progress.completionTime || (Date.now() - (progress.startTime || Date.now())),
-                    puzzlesCompleted: completedPuzzles,
-                    lastUpdated: progress.lastUpdated || Date.now()
-                  });
-                }
-              }
-            } catch (e) {
-              // Skip invalid entries
-            }
-          }
-        }
+    // Subscribe to real-time leaderboard updates
+    const unsubscribe = subscribeToLeaderboard((leaderboardData) => {
+      console.log(
+        "🎯 LeaderboardWidget: Received Firebase data:",
+        leaderboardData
+      );
 
-        // Sort by completion time (fastest first) and take top 3
-        const sorted = allProgress
-          .sort((a, b) => a.completionTime - b.completionTime)
-          .slice(0, 3);
+      // Take top 3 teams for the widget
+      const topThree = leaderboardData.slice(0, 3);
+      setTopTeams(topThree);
+      setIsLoading(false);
+    });
 
-        setTopTeams(sorted);
-      } catch (error) {
-        console.error('Error loading leaderboard:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    return () => {
+      console.log("🎯 LeaderboardWidget: Cleaning up subscription");
+      unsubscribe();
     };
-
-    loadLeaderboard();
-    
-    // Refresh every 5 seconds
-    const interval = setInterval(loadLeaderboard, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const getRankIcon = (index: number) => {
     switch (index) {
-      case 0: return '🥇';
-      case 1: return '🥈';
-      case 2: return '🥉';
-      default: return '🏅';
+      case 0:
+        return "🥇";
+      case 1:
+        return "🥈";
+      case 2:
+        return "🥉";
+      default:
+        return "🏅";
     }
   };
 
@@ -128,7 +102,7 @@ export const LeaderboardWidget = () => {
                   <span className="text-lg">{getRankIcon(index)}</span>
                   <div>
                     <p className="font-semibold text-sm text-foreground">
-                      {team.teamName}
+                      {team.playerName}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Team {team.teamId}
