@@ -128,6 +128,33 @@ wren-manor-db/
 - **Lower latency** - Faster updates and notifications
 - **No complex queries** - Simple key-value structure
 
+## System Lock & Coordinator Access
+
+The system includes an anti-cheat mechanism that locks the system after a game is completed. Coordinators can unlock it using a PIN:
+
+### Default Coordinator PIN: `2024`
+
+To change the coordinator PIN:
+
+1. Open `src/pages/Home.tsx`
+2. Find the `COORDINATOR_PIN` constant in the `SystemLockedScreen` component
+3. Change `"2024"` to your desired PIN
+
+### How to unlock:
+
+1. When system is locked, click "Coordinator Access"
+2. Enter the coordinator PIN
+3. Click "Unlock System"
+4. System will be unlocked and page will reload
+
+### System Lock Behavior:
+
+- ✅ Locks system after game completion
+- ✅ Prevents multiple plays on same browser/device
+- ✅ Maintains game integrity for events
+- ✅ Coordinator override with PIN access
+- ✅ Automatic page reload after unlock
+
 ## Testing
 
 The app will work with demo/placeholder values if Firebase isn't configured yet, but real-time features won't work until proper Firebase setup is complete.

@@ -12,7 +12,7 @@ import {
 import { ManorButton } from "@/components/ui/manor-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skull, Crown, Users, Trophy, Clock } from "lucide-react";
+import { Skull, Crown, Users, Trophy, Clock, KeyRound } from "lucide-react";
 import {
   getGameProgress,
   saveGameProgress,
@@ -29,6 +29,38 @@ const Home = () => {
   const [playerName, setPlayerName] = useState("");
   const [teamId, setTeamId] = useState("");
   const [isStarting, setIsStarting] = useState(false);
+
+  // PIN unlock states (keeping for compatibility)
+  const [showPinInput, setShowPinInput] = useState(false);
+  const [pin, setPin] = useState("");
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const COORDINATOR_PIN = "2024";
+
+  // Keyboard shortcut sequence tracking
+  const [keySequence, setKeySequence] = useState("");
+
+  const handleUnlock = () => {
+    if (pin === COORDINATOR_PIN) {
+      setIsUnlocking(true);
+      localStorage.removeItem("wren-manor-system-completed");
+      toast({
+        title: "🔓 System Unlocked",
+        description: "The system has been unlocked by coordinator access.",
+        duration: 3000,
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      toast({
+        title: "❌ Invalid PIN",
+        description: "The coordinator PIN is incorrect.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      setPin("");
+    }
+  };
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -94,6 +126,68 @@ const Home = () => {
     };
 
     loadProgress();
+  }, []);
+
+  // Initialize global keyboard shortcut once
+  useEffect(() => {
+    const systemCompleted = localStorage.getItem("wren-manor-system-completed");
+    if (systemCompleted !== "true") {
+      console.log("🔑 System not locked, keyboard listener disabled");
+      return;
+    }
+
+    console.log("🔑 Setting up global keyboard listener for unlock sequence");
+
+    // Simple global listener
+    let sequence = "";
+    const TARGET = "unlock2024";
+
+    const keyHandler = (event: KeyboardEvent) => {
+      console.log(`🎹 Key detected: ${event.key} (Code: ${event.code})`);
+
+      sequence += event.key.toLowerCase();
+      console.log(`📝 Current sequence: "${sequence}"`);
+
+      if (sequence.includes(TARGET)) {
+        console.log("🎯 UNLOCK SEQUENCE MATCHED!");
+
+        // Unlock the system
+        localStorage.removeItem("wren-manor-system-completed");
+        toast({
+          title: "� System Unlocked",
+          description: "Coordinator access granted!",
+          duration: 3000,
+        });
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+
+        sequence = ""; // Reset
+        return;
+      }
+
+      // Keep sequence manageable
+      if (sequence.length > 20) {
+        sequence = sequence.slice(-10);
+        console.log(`✂️ Sequence trimmed to: "${sequence}"`);
+      }
+    };
+
+    // Attach to both document and window for maximum coverage
+    document.addEventListener("keydown", keyHandler, true);
+    window.addEventListener("keydown", keyHandler, true);
+
+    console.log(
+      "✅ Global keyboard listeners attached. Type 'unlock2024' anywhere on the page."
+    );
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("keydown", keyHandler, true);
+      window.removeEventListener("keydown", keyHandler, true);
+      console.log("🧹 Keyboard listeners removed");
+    };
   }, []);
 
   const handleStartGame = async () => {
@@ -226,6 +320,35 @@ const Home = () => {
   // Check if system is locked and show appropriate message
   const systemCompleted = localStorage.getItem("wren-manor-system-completed");
   if (systemCompleted === "true") {
+    const [showPinInput, setShowPinInput] = useState(false);
+    const [pin, setPin] = useState("");
+    const [isUnlocking, setIsUnlocking] = useState(false);
+
+    const COORDINATOR_PIN = "2024";
+
+    const handleUnlock = () => {
+      if (pin === COORDINATOR_PIN) {
+        setIsUnlocking(true);
+        localStorage.removeItem("wren-manor-system-completed");
+        toast({
+          title: "🔓 System Unlocked",
+          description: "The system has been unlocked by coordinator access.",
+          duration: 3000,
+        });
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        toast({
+          title: "❌ Invalid PIN",
+          description: "The coordinator PIN is incorrect.",
+          variant: "destructive",
+          duration: 3000,
+        });
+        setPin("");
+      }
+    };
+
     return (
       <Layout showProgress={false}>
         <div className="max-w-4xl mx-auto space-y-8">
@@ -240,6 +363,11 @@ const Home = () => {
             </p>
             <p className="text-sm text-accent mt-4">
               Please try from a different device or browser.
+            </p>
+
+            {/* Subtle hint for coordinators */}
+            <p className="text-xs text-muted-foreground/50 mt-6 font-mono">
+              * Coordinator access available
             </p>
           </div>
         </div>
