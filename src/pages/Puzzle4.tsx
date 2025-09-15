@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Layout } from "@/components/Layout";
-import { ManorCard, ManorCardHeader, ManorCardTitle, ManorCardContent, ManorCardFooter } from "@/components/ui/manor-card";
+import { ManorCard, ManorCardHeader, ManorCardTitle, ManorCardContent } from "@/components/ui/manor-card";
 import { ManorButton } from "@/components/ui/manor-button";
 import { PhoneKeypad } from "@/components/ui/phone-keypad";
 import { toast } from "@/hooks/use-toast";
 import { getGameProgress, saveGameProgress } from "@/lib/gameState";
-import { Code, Bug, CheckCircle2, Phone } from "lucide-react";
+import { Code, Bug, CheckCircle2 } from "lucide-react";
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -27,7 +27,6 @@ const Puzzle4 = () => {
     const loadProgress = async () => {
       try {
         setLoading(true);
-        // Get player data from localStorage
         const stored = localStorage.getItem('wren-manor-player');
         let playerName = '';
         let teamId = '';
@@ -75,7 +74,7 @@ const Puzzle4 = () => {
     loadProgress();
   }, [navigate]);
 
-  // The buggy Python code that needs debugging
+  // Updated buggy Python code display
   const buggyCode = `def find_murder_weapon():
     weapons = ["dagger", "rope", "candlestick", "poison", "blunt_object"]
     clues = [1, 2, 3, 4, 5]
@@ -113,7 +112,8 @@ print(f"The PIN is: {result}")`;
     "The PIN should be 4 digits representing the weapon name"
   ];
 
-  const correctPIN = "4107"; // D-A-G-G = 4-1-7-7, but we need 4 digits so 4107
+  // Updated correct PIN to 4177
+  const correctPIN = "4177"; // D-A-G-G = 4-1-7-7
 
   const handleCodeSubmit = () => {
     if (!userCode.trim()) {
@@ -125,11 +125,10 @@ print(f"The PIN is: {result}")`;
       return;
     }
 
-    // Simulate running the corrected code
     try {
-      // Check if the code looks like it would produce the correct PIN
-      if (userCode.includes("4107") || userCode.includes("dagger") || userCode.includes("weapon_index = 0")) {
-        setDebugResult("Code debugging successful! The PIN is: 4107");
+      // Updated check to validate correct solution
+      if (userCode.includes("4177") || userCode.includes("dagger") || userCode.includes("weapon_index = 0")) {
+        setDebugResult("Code debugging successful! The PIN is: 4177");
         setShowKeypad(true);
         toast({
           title: "🐍 Code Debugged!",
@@ -171,7 +170,6 @@ print(f"The PIN is: {result}")`;
         duration: 3000,
       });
 
-      // Ensure localStorage is updated before navigation
       const playerData = {
         playerName: newProgress.playerName,
         teamId: newProgress.teamId
