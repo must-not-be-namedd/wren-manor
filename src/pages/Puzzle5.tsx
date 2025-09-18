@@ -96,20 +96,26 @@ const Puzzle5 = () => {
     }
   ];
 
-  // Randomize dialogues based on player data for consistent but unique ordering
-  const dialogues = useMemo(() => {
-    if (!progress?.playerName || !progress?.teamId) return baseDialogues;
-    const seed = `${progress.playerName}-${progress.teamId}`;
-    return shuffleArray(baseDialogues, seed);
-  }, [progress?.playerName, progress?.teamId]);
-
-  const correctContradictions = [
+  const baseCorrectContradictions = [
     'butler-time|maid-sight',
     'chef-kitchen|guest-chef', 
     'doctor-study|lady-drawing',
     'butler-keys|maid-cleaning',
     'butler-time|butler-keys'
   ];
+
+  // Randomize dialogues and contradictions based on player data for consistent but unique ordering
+  const dialogues = useMemo(() => {
+    if (!progress?.playerName || !progress?.teamId) return baseDialogues;
+    const seed = `${progress.playerName}-${progress.teamId}`;
+    return shuffleArray(baseDialogues, seed);
+  }, [progress?.playerName, progress?.teamId]);
+
+  const correctContradictions = useMemo(() => {
+    if (!progress?.playerName || !progress?.teamId) return baseCorrectContradictions;
+    const seed = `${progress.playerName}-${progress.teamId}`;
+    return shuffleArray(baseCorrectContradictions, seed);
+  }, [progress?.playerName, progress?.teamId]);
 
   // Load game progress
   useEffect(() => {
