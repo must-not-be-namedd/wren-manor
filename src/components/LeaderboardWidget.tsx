@@ -9,34 +9,35 @@ import {
 } from "@/components/ui/manor-card";
 import { Badge } from "@/components/ui/badge";
 import {
-  subscribeToLeaderboard,
+  getLeaderboard,
   type LeaderboardEntry,
-} from "@/integrations/firebase/gameState";
+} from "@/lib/gameState";
 
 export const LeaderboardWidget = () => {
   const [topTeams, setTopTeams] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log("🎯 LeaderboardWidget: Setting up Firebase subscription");
+    console.log("🎯 LeaderboardWidget: Loading leaderboard data");
+    setIsLoading(true);
 
-    // Subscribe to real-time leaderboard updates
-    const unsubscribe = subscribeToLeaderboard((leaderboardData) => {
-      console.log(
-        "🎯 LeaderboardWidget: Received Firebase data:",
-        leaderboardData
-      );
-
-      // Take top 3 teams for the widget
-      const topThree = leaderboardData.slice(0, 3);
-      setTopTeams(topThree);
-      setIsLoading(false);
-    });
-
-    return () => {
-      console.log("🎯 LeaderboardWidget: Cleaning up subscription");
-      unsubscribe();
+    const loadLeaderboard = async () => {
+      try {
+        const leaderboard = await getLeaderboard();
+        console.log("📊 LeaderboardWidget: Received leaderboard data:", leaderboard);
+        setTopTeams(leaderboard.slice(0, 3));
+      } catch (error) {
+        console.error("Error loading leaderboard:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
+
+    loadLeaderboard();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(loadLeaderboard, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const formatTime = (milliseconds: number) => {
@@ -115,7 +116,7 @@ export const LeaderboardWidget = () => {
                     <span>{formatTime(team.completionTime)}</span>
                   </div>
                   <Badge variant="outline" className="text-xs mt-1">
-                    {team.puzzlesCompleted}/9
+                    {team.currentProgress}/9
                   </Badge>
                 </div>
               </motion.div>
