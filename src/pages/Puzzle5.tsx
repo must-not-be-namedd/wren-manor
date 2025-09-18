@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
-import { ManorCard, ManorCardContent, ManorCardDescription, ManorCardHeader, ManorCardTitle } from '@/components/ui/manor-card';
+import { ManorCard, ManorCardContent, ManorCardHeader, ManorCardTitle } from '@/components/ui/manor-card';
 import { ManorButton } from '@/components/ui/manor-button';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Search, CheckCircle } from 'lucide-react';
@@ -18,7 +18,7 @@ const Puzzle5 = () => {
   const [selectedContradictions, setSelectedContradictions] = useState<string[]>([]);
   const [puzzleSolved, setPuzzleSolved] = useState(false);
 
-  // Create a simple hash function for consistent randomization
+  // Simple hash function for consistent randomization
   const hashString = (str: string) => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -29,7 +29,7 @@ const Puzzle5 = () => {
     return Math.abs(hash);
   };
 
-  // Shuffle array based on seed for consistent randomization per player
+  // Shuffle array based on seed
   const shuffleArray = <T,>(array: T[], seed: string): T[] => {
     const shuffled = [...array];
     const hash = hashString(seed);
@@ -96,25 +96,46 @@ const Puzzle5 = () => {
     }
   ];
 
-  const baseCorrectContradictions = [
-    'butler-time|maid-sight',
-    'chef-kitchen|guest-chef', 
-    'doctor-study|lady-drawing',
-    'butler-keys|maid-cleaning',
-    'butler-time|butler-keys'
+  // Now 5 options (3 correct, 2 false decoys)
+  const baseContradictions = [
+    {
+      id: 'butler-time|maid-sight',
+      text: "Butler claims lights out at 8:10, but maid saw him at 8:15 (impossible in darkness)",
+      correct: true,
+    },
+    {
+      id: 'chef-kitchen|guest-chef',
+      text: "Chef claims never left kitchen, but was seen in garden at 8:20",
+      correct: true,
+    },
+    {
+      id: 'doctor-study|lady-drawing',
+      text: "Doctor says Lord Ashcroft was alive when he left at 8:30, but Lady heard arguing at 8:25",
+      correct: true,
+    },
+    {
+      id: 'butler-keys|maid-cleaning',
+      text: "Butler locked all doors at 8:00, but maid saw Lady Victoria enter at 8:30",
+      correct: false, // decoy
+    },
+    {
+      id: 'butler-time|butler-keys',
+      text: "Butler claims lights out at 8:10 but also says he locked doors at 8:00 (inconsistent timeline)",
+      correct: false, // decoy
+    },
   ];
 
-  // Randomize dialogues and contradictions based on player data for consistent but unique ordering
+  // Randomize dialogues and contradictions for each player
   const dialogues = useMemo(() => {
     if (!progress?.playerName || !progress?.teamId) return baseDialogues;
     const seed = `${progress.playerName}-${progress.teamId}`;
     return shuffleArray(baseDialogues, seed);
   }, [progress?.playerName, progress?.teamId]);
 
-  const correctContradictions = useMemo(() => {
-    if (!progress?.playerName || !progress?.teamId) return baseCorrectContradictions;
+  const contradictions = useMemo(() => {
+    if (!progress?.playerName || !progress?.teamId) return baseContradictions;
     const seed = `${progress.playerName}-${progress.teamId}`;
-    return shuffleArray(baseCorrectContradictions, seed);
+    return shuffleArray(baseContradictions, seed);
   }, [progress?.playerName, progress?.teamId]);
 
   // Load game progress
@@ -122,7 +143,6 @@ const Puzzle5 = () => {
     const loadProgress = async () => {
       try {
         setLoading(true);
-        // Get player data from localStorage
         const stored = localStorage.getItem('wren-manor-player');
         let playerName = '';
         let teamId = '';
@@ -143,7 +163,6 @@ const Puzzle5 = () => {
         const gameProgress = await getGameProgress(playerName, teamId);
         setProgress(gameProgress);
         
-        // Check if previous puzzles are incomplete
         if (!gameProgress.p1 || !gameProgress.p2 || !gameProgress.p3 || !gameProgress.p4) {
           console.log('Previous puzzles incomplete, redirecting...');
           if (!gameProgress.p1) navigate('/puzzle-1');
@@ -153,7 +172,6 @@ const Puzzle5 = () => {
           return;
         }
 
-        // If puzzle already completed, redirect to next
         if (gameProgress.p5 && gameProgress.currentPage > 4) {
           console.log('Puzzle 5 already completed, redirecting to next puzzle...');
           navigate('/puzzle-6');
@@ -170,23 +188,20 @@ const Puzzle5 = () => {
     loadProgress();
   }, [navigate]);
 
-  const handleContradictionToggle = (contradiction: string) => {
-    setSelectedContradictions(prev => {
-      if (prev.includes(contradiction)) {
-        return prev.filter(c => c !== contradiction);
-      } else {
-        return [...prev, contradiction];
-      }
-    });
+  const handleContradictionToggle = (id: string) => {
+    setSelectedContradictions(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    );
   };
 
   const handleSubmit = async () => {
-    // Check if exactly the first 3 contradictions are selected
-    const firstThreeContradictions = correctContradictions.slice(0, 3);
-    const correctlySelected = firstThreeContradictions.every(c => selectedContradictions.includes(c));
-    const onlyFirstThreeSelected = selectedContradictions.length === 3 && correctlySelected;
-    
-    if (onlyFirstThreeSelected) {
+    const correctOnes = baseContradictions.filter(c => c.correct).map(c => c.id);
+
+    const allCorrect = correctOnes.every(c => selectedContradictions.includes(c));
+    const onlyCorrect = selectedContradictions.length === correctOnes.length &&
+                        selectedContradictions.every(c => correctOnes.includes(c));
+
+    if (allCorrect && onlyCorrect) {
       const newProgress = { ...progress, p5: true, currentPage: 5 };
       await saveGameProgress(newProgress);
       setProgress(newProgress);
@@ -198,7 +213,6 @@ const Puzzle5 = () => {
         duration: 3000,
       });
 
-      // Ensure localStorage is updated before navigation
       const playerData = {
         playerName: newProgress.playerName,
         teamId: newProgress.teamId
@@ -211,7 +225,7 @@ const Puzzle5 = () => {
     } else {
       toast({
         title: "Incorrect Selection",
-        description: "You must select exactly the first 3 contradictions to expose the lies.",
+        description: "You must select exactly the 3 correct contradictions.",
         variant: "destructive",
       });
     }
@@ -279,34 +293,18 @@ const Puzzle5 = () => {
           </ManorCardHeader>
           <ManorCardContent className="space-y-4">
             <div className="grid gap-3">
-              {correctContradictions.map((contradiction, index) => (
+              {contradictions.map((contradiction, index) => (
                 <div
-                  key={contradiction}
+                  key={contradiction.id}
                   className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                    selectedContradictions.includes(contradiction)
+                    selectedContradictions.includes(contradiction.id)
                       ? 'border-primary bg-primary/10'
                       : 'border-border hover:border-accent'
                   }`}
-                  onClick={() => handleContradictionToggle(contradiction)}
+                  onClick={() => handleContradictionToggle(contradiction.id)}
                 >
                   <div className="text-sm text-muted-foreground">Contradiction {index + 1}:</div>
-                  <div className="text-foreground">
-                    {contradiction === 'butler-time|maid-sight' && 
-                      "Butler claims lights out at 8:10, but maid saw him at 8:15 (impossible in darkness)"
-                    }
-                    {contradiction === 'chef-kitchen|guest-chef' && 
-                      "Chef claims never left kitchen, but was seen in garden at 8:20"
-                    }
-                    {contradiction === 'doctor-study|lady-drawing' && 
-                      "Doctor says Lord Ashcroft was alive when he left at 8:30, but Lady heard arguing at 8:25"
-                    }
-                    {contradiction === 'butler-keys|maid-cleaning' && 
-                      "Butler locked all doors at 8:00, but maid saw Lady Victoria enter at 8:30"
-                    }
-                    {contradiction === 'butler-time|butler-keys' && 
-                      "Butler claims lights out at 8:10 but also says he locked doors at 8:00 (inconsistent timeline)"
-                    }
-                  </div>
+                  <div className="text-foreground">{contradiction.text}</div>
                 </div>
               ))}
             </div>
