@@ -141,9 +141,12 @@ const Puzzle5 = () => {
   };
 
   const handleSubmit = async () => {
-    const found = selectedContradictions.filter(c => correctContradictions.includes(c));
+    // Check if exactly the first 3 contradictions are selected
+    const firstThreeContradictions = correctContradictions.slice(0, 3);
+    const correctlySelected = firstThreeContradictions.every(c => selectedContradictions.includes(c));
+    const onlyFirstThreeSelected = selectedContradictions.length === 3 && correctlySelected;
     
-    if (found.length >= 3) {
+    if (onlyFirstThreeSelected) {
       const newProgress = { ...progress, p5: true, currentPage: 5 };
       await saveGameProgress(newProgress);
       setProgress(newProgress);
@@ -167,8 +170,8 @@ const Puzzle5 = () => {
       }, 2000);
     } else {
       toast({
-        title: "Insufficient Evidence",
-        description: `You need to identify at least 3 contradictions to expose the lies. Found: ${found.length}/3`,
+        title: "Incorrect Selection",
+        description: "You must select exactly the first 3 contradictions to expose the lies.",
         variant: "destructive",
       });
     }
@@ -269,7 +272,7 @@ const Puzzle5 = () => {
             </div>
             
             <div className="text-center pt-4">
-              <ManorButton onClick={handleSubmit} disabled={selectedContradictions.length < 3}>
+              <ManorButton onClick={handleSubmit} disabled={selectedContradictions.length !== 3}>
                 Expose the Lies
               </ManorButton>
             </div>

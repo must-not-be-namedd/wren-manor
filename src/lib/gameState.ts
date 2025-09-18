@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-// Game State Management for Wren Manor Murder Mystery - Firebase Version
-export * from '@/integrations/firebase/gameState';
-=======
 // Game State Management for Wren Manor Murder Mystery
 import { supabase } from "@/integrations/supabase/client";
 
@@ -268,4 +264,3 @@ export const resetGameProgress = async (playerName: string, teamId: string): Pro
     console.error('Error resetting game progress:', error);
   }
 };
->>>>>>> 07c567a5c8acd88e8126ed6f1f57c4df96d66a9e
