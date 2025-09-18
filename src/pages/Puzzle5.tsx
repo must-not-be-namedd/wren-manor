@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
@@ -18,7 +18,34 @@ const Puzzle5 = () => {
   const [selectedContradictions, setSelectedContradictions] = useState<string[]>([]);
   const [puzzleSolved, setPuzzleSolved] = useState(false);
 
-  const dialogues = [
+  // Create a simple hash function for consistent randomization
+  const hashString = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  };
+
+  // Shuffle array based on seed for consistent randomization per player
+  const shuffleArray = <T,>(array: T[], seed: string): T[] => {
+    const shuffled = [...array];
+    const hash = hashString(seed);
+    let currentIndex = shuffled.length;
+    let randomIndex: number;
+
+    while (currentIndex !== 0) {
+      randomIndex = Math.floor((hash * currentIndex * Math.sin(currentIndex)) % currentIndex);
+      currentIndex--;
+      [shuffled[currentIndex], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[currentIndex]];
+    }
+
+    return shuffled;
+  };
+
+  const baseDialogues = [
     {
       id: 'butler-time',
       suspect: 'Charles (Butler)',
@@ -68,6 +95,13 @@ const Puzzle5 = () => {
       category: 'witness'
     }
   ];
+
+  // Randomize dialogues based on player data for consistent but unique ordering
+  const dialogues = useMemo(() => {
+    if (!progress?.playerName || !progress?.teamId) return baseDialogues;
+    const seed = `${progress.playerName}-${progress.teamId}`;
+    return shuffleArray(baseDialogues, seed);
+  }, [progress?.playerName, progress?.teamId]);
 
   const correctContradictions = [
     'butler-time|maid-sight',
